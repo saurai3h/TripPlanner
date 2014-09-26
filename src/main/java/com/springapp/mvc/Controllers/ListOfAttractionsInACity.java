@@ -25,11 +25,18 @@ public class ListOfAttractionsInACity {
         Integer numberOfDays = Integer.parseInt(days);
 
         ArrayList<String> attractions = AttractionsForACity.attractionsForACity(city);
-        JSONArray jsonArray = new JSONArray();
+
+        JSONObject attractionObject = new JSONObject();
+        JSONArray attractionObjects = new JSONArray();
+
         for(String attraction : attractions) {
-            jsonArray.put(attraction);
+
+            attractionObject.put("attractionName", attraction);
+            attractionObject.put("attractionImage",);
+
+            attractionObjects.put(attractionObject);
         }
-    return jsonArray.toString();
+    return attractionObjects.toString();
 
     }
 }
