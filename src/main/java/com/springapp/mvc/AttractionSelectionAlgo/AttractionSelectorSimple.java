@@ -11,11 +11,11 @@ public class AttractionSelectorSimple implements AttractionSelector {
     @Override
     public ArrayList<Attraction> selectAttraction(ArrayList<Attraction> listOfAllAttractions,
                                                   GratificationScoreCalculator gratificationScoreCalculator, int noOfDays) {
-//        int noOfAttractionsTobeSelected = noOfDays*4;
-//
-//        for(Attraction attraction:listOfAllAttractions){
-//
-//        }
+        int noOfAttractionsTobeSelected = noOfDays*4;
+
+        for(Attraction attraction:listOfAllAttractions){
+
+        }
         return null;
     }
 }

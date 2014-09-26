@@ -20,6 +20,10 @@
     <patterns />
     <RunnerSettings RunnerId="Run" />
     <ConfigurationWrapper RunnerId="Run" />
-    <method />
+    <method>
+      <option name="BuildArtifacts" enabled="true">
+        <artifact name="TripPlanner:war exploded" />
+      </option>
+    </method>
   </configuration>
 </component>
