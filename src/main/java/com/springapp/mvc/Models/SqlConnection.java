@@ -32,6 +32,4 @@ public class SqlConnection {
             return null;
         }
     }
-
-
 }
