@@ -25,7 +25,7 @@ public class AttractionSelectorSimple implements AttractionSelector {
         ArrayList<ArrayList<Attraction>> listOfSchedulesForDays = new ArrayList<ArrayList<Attraction>>();
         for(int dayNo = 0; dayNo<noOfDays; dayNo++){
             ArrayList<Attraction> scheduleForThisDay = new ArrayList<Attraction>();
-            scheduleForThisDay.addAll(listOfAllAttractions.subList(dayNo*noOfAttractionsPerDay,dayNo*(noOfAttractionsPerDay+1)-1));
+            scheduleForThisDay.addAll(listOfAllAttractions.subList(dayNo*noOfAttractionsPerDay,(dayNo+1)*noOfAttractionsPerDay-1));
             listOfSchedulesForDays.add(scheduleForThisDay);
         }
         return listOfSchedulesForDays;
