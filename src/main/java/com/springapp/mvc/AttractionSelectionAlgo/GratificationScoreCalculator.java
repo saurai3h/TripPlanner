@@ -6,5 +6,5 @@ import com.springapp.mvc.Models.Attraction;
  * Created by kartik.k on 9/26/2014.
  */
 public interface GratificationScoreCalculator {
-    public float getGratificationScoreForAttraction(Attraction attraction);
+    public double getGratificationScoreForAttraction(Attraction attraction);
 }

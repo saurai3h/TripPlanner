@@ -6,6 +6,7 @@ import com.springapp.mvc.AttractionSelectionAlgo.GratificationScoreCalculatorSim
 import com.springapp.mvc.Models.Attraction;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -29,15 +30,21 @@ public class ListOfAttractionsInACity {
 
         JSONArray scheduleForAllDays = new JSONArray();
         AttractionSelector attractionSelector = new AttractionSelectorSimple();
+
         ArrayList<ArrayList<Attraction>> listOfSchedules = attractionSelector.selectAttraction(new GratificationScoreCalculatorSimple(), city, numberOfDays);
+
         for(ArrayList<Attraction> scheduleOfOneDay:listOfSchedules) {
+
             JSONArray oneDayScheduleJSON = new JSONArray();
+
             for(Attraction attraction:scheduleOfOneDay){
-                oneDayScheduleJSON.put(attraction.getName());
+                oneDayScheduleJSON.put(attraction);
             }
+
             scheduleForAllDays.put(oneDayScheduleJSON);
         }
-    return scheduleForAllDays.toString();
+
+        return scheduleForAllDays.toString();
 
     }
 }

@@ -119,7 +119,7 @@ public class SqlQueryExecutor {
                     attraction.setAdditionalInformation(resultSet.getString("additionalInformation"));
                     attraction.setActivities(resultSet.getString("activities"));
                     attraction.setCityName(city);
-                    attraction.setDescription(resultSet.getString("description"));
+                    attraction.setDescription(resultSet.getString("attractionDescription"));
                     attraction.setFee(resultSet.getBoolean("attractionFee"));
                     attraction.setImageURL(resultSet.getString("attractionImageURL"));
                     attraction.setLatitude(resultSet.getDouble("attractionLatitude"));
