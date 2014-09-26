@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" hash="4232366573">
+    <data-source source="LOCAL" name="MySQL - @localhost" uuid="79ccc71a-9ad0-451b-b11b-32cd6ca8a20a">
+      <driver-ref>mysql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3306</jdbc-url>
+      <user-name>root</user-name>
+      <user-password>dfdadfcbdfd9dfd9dfdddfc5dfd8dfce</user-password>
+      <driver-properties>
+        <property name="zeroDateTimeBehavior" value="convertToNull" />
+        <property name="tinyInt1isBit" value="false" />
+      </driver-properties>
+      <libraries />
+    </data-source>
+    <data-source source="LOCAL" name="MySQL - @172.16.152.143" uuid="e6fd1405-de59-42b3-a91d-1d602a9edb32">
+      <driver-ref>mysql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://172.16.152.143:3306</jdbc-url>
+      <user-name>root</user-name>
+      <user-password>dfdadfcbdfd9dfd9dfdddfc5dfd8dfce</user-password>
+      <driver-properties>
+        <property name="zeroDateTimeBehavior" value="convertToNull" />
+        <property name="tinyInt1isBit" value="false" />
+      </driver-properties>
+      <libraries />
+    </data-source>
+  </component>
+</project>
+
