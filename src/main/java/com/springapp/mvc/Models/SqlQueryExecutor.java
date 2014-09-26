@@ -86,32 +86,44 @@ public class SqlQueryExecutor {
         }
     }
 
-    public static ArrayList<String> getAllAttractionsForACity(String city) {
+    public static ArrayList<Attraction> getAllAttractionsForACity(String city) {
         try {
 
             Integer cityID = getCityIdByName(city);
 
-            ArrayList<String> attractionNames = new ArrayList<String>();
+            ArrayList<Attraction> attractionList = new ArrayList<Attraction>();
 
                 Connection conn = getConnection();
 
                 PreparedStatement findAttractionsStatement;
                 findAttractionsStatement = conn.prepareStatement(
-                        "select attractionName from attractionmapping where cityID = ?");
+                        "SELECT tripplanner.attractionmapping.attractionName,tripplanner.attractionmapping.attractionID," +
+                                "  tripplanner.attractiondetail.noOfReviews, tripplanner.attractiondetail.noOfStars," +
+                                "  tripplanner.attractiondetail.attractionReviewURL,tripplanner.attractiondetail.attractionType," +
+                                "  tripplanner.attractiondetail.attractionFee,tripplanner.attractiondetail.attractionVisitTime," +
+                                "  tripplanner.attractiondetail.attractionDescription,tripplanner.attractiondetail.attractionLatitude," +
+                                "  tripplanner.attractiondetail.attractionLongitude,tripplanner.attractiondetail.attractionImageURL," +
+                                "  tripplanner.attractiondetail.additionalInformation,tripplanner.attractiondetail.activities FROM " +
+                                "tripplanner.attractionmapping INNER JOIN tripplanner.attractiondetail " +
+                                "ON tripplanner.attractionmapping.attractionID = " +
+                                "tripplanner.attractiondetail.attractionID WHERE tripplanner.attractionmapping.cityID = ?;");
                 findAttractionsStatement.setInt(1, cityID);
 
                 ResultSet resultSet = findAttractionsStatement.executeQuery();
 
                 while(resultSet.next()) {
-                    String attractionName = resultSet.getString("attractionName");
-                    attractionNames.add(attractionName);
+                    Attraction attraction = new Attraction(
+                            resultSet.getInt("noOfReviews"),resultSet.getFloat("noOfStars"),
+                            resultSet.getString("attractionName"),city
+                    );
+                    attractionList.add(attraction);
                 }
 
                 conn.close();
                 findAttractionsStatement.close();
 
 
-            return attractionNames;
+            return attractionList;
 
         } catch (SQLException e) {
             e.printStackTrace();

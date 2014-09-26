@@ -1,8 +1,9 @@
 package com.springapp.mvc.Controllers;
 
-import com.springapp.mvc.AttractionSelectionAlgo.GratificationScoreCalculator;
+import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelector;
+import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelectorSimple;
 import com.springapp.mvc.AttractionSelectionAlgo.GratificationScoreCalculatorSimple;
-import com.springapp.mvc.Models.SqlQueryExecutor;
+import com.springapp.mvc.Models.Attraction;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.stereotype.Controller;
@@ -25,14 +26,18 @@ public class ListOfAttractionsInACity {
 
         Integer numberOfDays = Integer.parseInt(days);
 
-        ArrayList<String> attractions = SqlQueryExecutor.getAllAttractionsForACity(city);
-        JSONArray jsonArray = new JSONArray();
-        GratificationScoreCalculator gratificationScoreCalculator = new GratificationScoreCalculatorSimple();
 
-        for(String attraction : attractions) {
-            jsonArray.put(attraction);
+        JSONArray scheduleForAllDays = new JSONArray();
+        AttractionSelector attractionSelector = new AttractionSelectorSimple();
+        ArrayList<ArrayList<Attraction>> listOfSchedules = attractionSelector.selectAttraction(new GratificationScoreCalculatorSimple(), city, numberOfDays);
+        for(ArrayList<Attraction> scheduleOfOneDay:listOfSchedules) {
+            JSONArray oneDayScheduleJSON = new JSONArray();
+            for(Attraction attraction:scheduleOfOneDay){
+                oneDayScheduleJSON.put(attraction.getName());
+            }
+            scheduleForAllDays.put(oneDayScheduleJSON);
         }
-    return jsonArray.toString();
+    return scheduleForAllDays.toString();
 
     }
 }

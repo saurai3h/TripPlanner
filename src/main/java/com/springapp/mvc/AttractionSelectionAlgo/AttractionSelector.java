@@ -8,6 +8,5 @@ import java.util.ArrayList;
  * Created by kartik.k on 9/26/2014.
  */
 public interface AttractionSelector {
-    public ArrayList<Attraction> selectAttraction(ArrayList<Attraction> listOfAllAttractions,
-                                                  GratificationScoreCalculator gratificationScoreCalculator, int noOfDays);
+    public ArrayList<ArrayList<Attraction>> selectAttraction(GratificationScoreCalculator gratificationScoreCalculator, String cityName, int noOfDays);
 }
