@@ -9,35 +9,28 @@ public class Attraction {
     private String name;
     private String cityName;
 
-    public int getNoOfReviews() {
-        return noOfReviews;
-    }
 
-    public void setNoOfReviews(int noOfReviews) {
+
+    public Attraction(int noOfReviews, float noOfStars, String name, String cityName) {
         this.noOfReviews = noOfReviews;
-    }
-
-    public float getNoOfStars() {
-        return noOfStars;
-    }
-
-    public void setNoOfStars(float noOfStars) {
         this.noOfStars = noOfStars;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
+        this.cityName = cityName;
     }
 
     public String getCityName() {
         return cityName;
     }
 
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
+    public String getName() {
+        return name;
+    }
+
+    public int getNoOfReviews() {
+        return noOfReviews;
+    }
+
+    public float getNoOfStars() {
+        return noOfStars;
     }
 }

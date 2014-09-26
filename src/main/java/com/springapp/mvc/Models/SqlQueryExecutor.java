@@ -91,13 +91,23 @@ public class SqlQueryExecutor {
 
             Integer cityID = getCityIdByName(city);
 
-            ArrayList<Attraction> attractionNames = new ArrayList<Attraction>();
+            //ArrayList<Attraction> attractionNames = new ArrayList<Attraction>();
+            ArrayList<Attraction> attractionList = new ArrayList<Attraction>();
 
                 Connection conn = getConnection();
 
-                String query = "select attractionID from attractionmapping where cityID = ?";
                 PreparedStatement findAttractionsStatement;
-                findAttractionsStatement = conn.prepareStatement(query);
+                findAttractionsStatement = conn.prepareStatement(
+                        "SELECT tripplanner.attractionmapping.attractionName,tripplanner.attractionmapping.attractionID," +
+                                "  tripplanner.attractiondetail.noOfReviews, tripplanner.attractiondetail.noOfStars," +
+                                "  tripplanner.attractiondetail.attractionReviewURL,tripplanner.attractiondetail.attractionType," +
+                                "  tripplanner.attractiondetail.attractionFee,tripplanner.attractiondetail.attractionVisitTime," +
+                                "  tripplanner.attractiondetail.attractionDescription,tripplanner.attractiondetail.attractionLatitude," +
+                                "  tripplanner.attractiondetail.attractionLongitude,tripplanner.attractiondetail.attractionImageURL," +
+                                "  tripplanner.attractiondetail.additionalInformation,tripplanner.attractiondetail.activities FROM " +
+                                "tripplanner.attractionmapping INNER JOIN tripplanner.attractiondetail " +
+                                "ON tripplanner.attractionmapping.attractionID = " +
+                                "tripplanner.attractiondetail.attractionID WHERE tripplanner.attractionmapping.cityID = ?;");
                 findAttractionsStatement.setInt(1, cityID);
 
                 ResultSet resultSet = findAttractionsStatement.executeQuery();
@@ -120,14 +130,14 @@ public class SqlQueryExecutor {
                     attraction.setNoOfReviews(resultSet.getInt("noOfReviews"));
                     attraction.setNoOfStars(resultSet.getDouble("noOfStars"));
 
-                    attractionNames.add(attraction);
+                    attractionList.add(attraction);
                 }
 
                 conn.close();
                 findAttractionsStatement.close();
 
 
-            return attractionNames;
+            return attractionList;
 
         } catch (SQLException e) {
             e.printStackTrace();
