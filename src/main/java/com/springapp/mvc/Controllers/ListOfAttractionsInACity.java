@@ -1,9 +1,10 @@
 package com.springapp.mvc.Controllers;
 
-import com.springapp.mvc.Models.AttractionsForACity;
+import com.springapp.mvc.AttractionSelectionAlgo.GratificationScoreCalculator;
+import com.springapp.mvc.AttractionSelectionAlgo.GratificationScoreCalculatorSimple;
+import com.springapp.mvc.Models.SqlQueryExecutor;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,10 @@ public class ListOfAttractionsInACity {
 
         Integer numberOfDays = Integer.parseInt(days);
 
-        ArrayList<String> attractions = AttractionsForACity.attractionsForACity(city);
+        ArrayList<String> attractions = SqlQueryExecutor.getAllAttractionsForACity(city);
         JSONArray jsonArray = new JSONArray();
+        GratificationScoreCalculator gratificationScoreCalculator = new GratificationScoreCalculatorSimple();
+
         for(String attraction : attractions) {
             jsonArray.put(attraction);
         }
