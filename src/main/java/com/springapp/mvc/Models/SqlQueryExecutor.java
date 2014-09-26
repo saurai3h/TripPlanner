@@ -86,25 +86,41 @@ public class SqlQueryExecutor {
         }
     }
 
-    public static ArrayList<String> getAllAttractionsForACity(String city) {
+    public static ArrayList<Attraction> getAllAttractionsForACity(String city) {
         try {
 
             Integer cityID = getCityIdByName(city);
 
-            ArrayList<String> attractionNames = new ArrayList<String>();
+            ArrayList<Attraction> attractionNames = new ArrayList<Attraction>();
 
                 Connection conn = getConnection();
 
+                String query = "select attractionID from attractionmapping where cityID = ?";
                 PreparedStatement findAttractionsStatement;
-                findAttractionsStatement = conn.prepareStatement(
-                        "select attractionName from attractionmapping where cityID = ?");
+                findAttractionsStatement = conn.prepareStatement(query);
                 findAttractionsStatement.setInt(1, cityID);
 
                 ResultSet resultSet = findAttractionsStatement.executeQuery();
 
                 while(resultSet.next()) {
-                    String attractionName = resultSet.getString("attractionName");
-                    attractionNames.add(attractionName);
+
+                    Attraction attraction = new Attraction();
+                    attraction.setName(resultSet.getString("attractionName"));
+                    attraction.setAdditionalInformation(resultSet.getString("additionalInformation"));
+                    attraction.setActivities(resultSet.getString("activities"));
+                    attraction.setCityName(city);
+                    attraction.setDescription(resultSet.getString("description"));
+                    attraction.setFee(resultSet.getBoolean("attractionFee"));
+                    attraction.setImageURL(resultSet.getString("attractionImageURL"));
+                    attraction.setLatitude(resultSet.getDouble("attractionLatitude"));
+                    attraction.setLongitude(resultSet.getDouble("attractionLongitude"));
+                    attraction.setReviewURL(resultSet.getString("attractionReviewURL"));
+                    attraction.setType(resultSet.getString("attractionType"));
+                    attraction.setVisitTime(resultSet.getDouble("attractionVisitTime"));
+                    attraction.setNoOfReviews(resultSet.getInt("noOfReviews"));
+                    attraction.setNoOfStars(resultSet.getDouble("noOfStars"));
+
+                    attractionNames.add(attraction);
                 }
 
                 conn.close();
