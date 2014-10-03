@@ -5,6 +5,7 @@ package com.springapp.mvc.Models;
  */
 public class Attraction {
 
+    private int attractionID;
     private int noOfReviews;
     private double noOfStars;
     private String name;
@@ -19,6 +20,14 @@ public class Attraction {
     private boolean fee;
     private String type;
     private String reviewURL;
+
+    public int getAttractionID() {
+        return attractionID;
+    }
+
+    public void setAttractionID(int attractionID) {
+        this.attractionID = attractionID;
+    }
 
     public int getNoOfReviews() {
         return noOfReviews;

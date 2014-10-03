@@ -2,7 +2,6 @@
   <artifact type="exploded-war" build-on-make="true" name="TripPlanner:war exploded">
     <output-path>$PROJECT_DIR$/target/TripPlanner</output-path>
     <root id="root">
-      <element id="javaee-facet-resources" facet="TripPlanner/web/Web" />
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
           <element id="module-output" name="TripPlanner" />
@@ -20,8 +19,10 @@
           <element id="library" level="project" name="Maven: org.springframework:spring-webmvc:3.2.0.RELEASE" />
           <element id="library" level="project" name="Maven: org.json:json:20090211" />
           <element id="library" level="project" name="Maven: mysql:mysql-connector-java:5.1.31" />
+          <element id="library" level="project" name="Maven: com.google.code.gson:gson:2.3" />
         </element>
       </element>
+      <element id="javaee-facet-resources" facet="TripPlanner/web/Web" />
     </root>
   </artifact>
 </component>

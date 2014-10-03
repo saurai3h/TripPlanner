@@ -16,16 +16,21 @@ public class AttractionSelectorSimple implements AttractionSelector {
                                                              String cityName, int noOfDays) {
         int noOfAttractionsPerDay = 4;
         ArrayList<Attraction> listOfAllAttractions = SqlQueryExecutor.getAllAttractionsForACity(cityName);
+
+        if(noOfAttractionsPerDay*noOfDays > listOfAllAttractions.size()){
+            noOfAttractionsPerDay = listOfAllAttractions.size()/noOfDays;
+        }
+
         Collections.sort(listOfAllAttractions,new Comparator<Attraction>() {
             @Override
             public int compare(Attraction o1, Attraction o2) {
-                return (int) (gratificationScoreCalculator.getGratificationScoreForAttraction(o1) - gratificationScoreCalculator.getGratificationScoreForAttraction(o2));
+                return (int) (gratificationScoreCalculator.getGratificationScoreForAttraction(o2) - gratificationScoreCalculator.getGratificationScoreForAttraction(o1));
             }
         });
         ArrayList<ArrayList<Attraction>> listOfSchedulesForDays = new ArrayList<ArrayList<Attraction>>();
         for(int dayNo = 0; dayNo<noOfDays; dayNo++){
             ArrayList<Attraction> scheduleForThisDay = new ArrayList<Attraction>();
-            scheduleForThisDay.addAll(listOfAllAttractions.subList(dayNo*noOfAttractionsPerDay,(dayNo+1)*noOfAttractionsPerDay-1));
+            scheduleForThisDay.addAll(listOfAllAttractions.subList(dayNo*noOfAttractionsPerDay,(dayNo+1)*noOfAttractionsPerDay));
             listOfSchedulesForDays.add(scheduleForThisDay);
         }
         return listOfSchedulesForDays;
