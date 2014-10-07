@@ -4,6 +4,7 @@ import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelector;
 import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelectorSimple;
 import com.springapp.mvc.AttractionSelectionAlgo.GratificationScoreCalculatorSimple;
 import com.springapp.mvc.Models.Attraction;
+import com.springapp.mvc.Models.SqlQueryExecutor;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -47,6 +48,21 @@ public class ListOfAttractionsInACity {
         }
 
         return scheduleForAllDays.toString();
+
+    }
+
+    @RequestMapping(value = "/api/getAllAttractions", method = RequestMethod.GET)
+    @ResponseBody
+    public String sendAllAttractions(@RequestParam String city,ModelMap model) throws JSONException{
+        JSONArray listOfAllAttractions = new JSONArray();
+
+        ArrayList<Attraction> listOfAttractions = SqlQueryExecutor.getAllAttractionsForACity(city);
+        for(Attraction attraction:listOfAttractions){
+            JSONObject attractionJSON = new JSONObject(attraction);
+            listOfAllAttractions.put(attractionJSON);
+        }
+
+        return listOfAllAttractions.toString();
 
     }
 }
