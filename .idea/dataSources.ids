@@ -4011,8 +4011,8 @@
       <column name="attractionFee" sqlType="TINYINT" precision="3" scale="0" nullable="true" jdbcType="-6"/>
       <column name="attractionVisitTime" sqlType="DOUBLE" precision="22" scale="0" nullable="true" jdbcType="8"/>
       <column name="attractionDescription" sqlType="VARCHAR" precision="255" scale="0" nullable="true" jdbcType="12"/>
-      <column name="attractionLatitude" sqlType="DOUBLE" precision="22" scale="0" nullable="false" jdbcType="8"/>
-      <column name="attractionLongitude" sqlType="DOUBLE" precision="22" scale="0" nullable="false" jdbcType="8"/>
+      <column name="attractionLongitude" sqlType="DOUBLE" precision="22" scale="0" nullable="true" jdbcType="8"/>
+      <column name="attractionLatitude" sqlType="DOUBLE" precision="22" scale="0" nullable="true" jdbcType="8"/>
       <column name="attractionImageURL" sqlType="VARCHAR" precision="10000" scale="0" nullable="true" jdbcType="12"/>
       <column name="noOfReviews" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4"/>
       <column name="noOfStars" sqlType="DOUBLE" precision="22" scale="0" nullable="false" jdbcType="8"/>
@@ -4030,6 +4030,11 @@
       <exported-key name="attractiondetail_ibfk_1" table="attractiondetail" schema="" catalog="tripplanner" columns="attractionID"/>
       <exported-key name="fkAttraction1" table="distancebetweenattractions" schema="" catalog="tripplanner" columns="attractionIDFirst"/>
       <exported-key name="fkAttraction2" table="distancebetweenattractions" schema="" catalog="tripplanner" columns="attractionIDSecond"/>
+    </table>
+    <table name="besttripsstepfunctioncornercache" schema="" catalog="tripplanner" type="TABLE">
+      <column name="CityID" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4"/>
+      <column name="TripDuration" sqlType="DOUBLE" precision="22" scale="0" nullable="false" jdbcType="8"/>
+      <column name="AttractionsBitString" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4"/>
     </table>
     <table name="citymapping" schema="" catalog="tripplanner" type="TABLE">
       <column name="cityID" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4" autoIncrement="true"/>
