@@ -1,7 +1,7 @@
 package com.springapp.mvc.Controllers;
 
 import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelector;
-import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelectorSimple;
+import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelectorBestSubsetOfAttractions;
 import com.springapp.mvc.AttractionSelectionAlgo.GratificationScoreCalculatorSimple;
 import com.springapp.mvc.Models.Attraction;
 import com.springapp.mvc.Models.SqlQueryExecutor;
@@ -31,9 +31,9 @@ public class ListOfAttractionsInACity {
 
 
         JSONArray scheduleForAllDays = new JSONArray();
-        AttractionSelector attractionSelector = new AttractionSelectorSimple();
+        AttractionSelector attractionSelector = new AttractionSelectorBestSubsetOfAttractions(new GratificationScoreCalculatorSimple());
 
-        ArrayList<ArrayList<Attraction>> listOfSchedules = attractionSelector.selectAttraction(new GratificationScoreCalculatorSimple(), city, numberOfDays);
+        ArrayList<ArrayList<Attraction>> listOfSchedules = attractionSelector.selectAttraction(city, numberOfDays);
 
         for(ArrayList<Attraction> scheduleOfOneDay:listOfSchedules) {
 

@@ -10,10 +10,13 @@ import java.util.Comparator;
 /**
  * Created by kartik.k on 9/26/2014.
  */
-public class AttractionSelectorSimple implements AttractionSelector {
+public class AttractionSelectorSimple extends AttractionSelector {
+    public AttractionSelectorSimple() {
+        super(new GratificationScoreCalculatorSimple());
+    }
+
     @Override
-    public ArrayList<ArrayList<Attraction>> selectAttraction(final GratificationScoreCalculator gratificationScoreCalculator,
-                                                             String cityName, int noOfDays) {
+    public ArrayList<ArrayList<Attraction>> selectAttraction(String cityName, int noOfDays) {
         int noOfAttractionsPerDay = 4;
         ArrayList<Attraction> listOfAllAttractions = SqlQueryExecutor.getAllAttractionsForACity(cityName);
 

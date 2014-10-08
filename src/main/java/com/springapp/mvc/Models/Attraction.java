@@ -21,6 +21,11 @@ public class Attraction {
     private String type;
     private String reviewURL;
 
+    @Override
+    public boolean equals(Object obj) {
+        return (obj.getClass()==this.getClass() && ((Attraction)obj).getAttractionID() == this.getAttractionID());
+    }
+
     public int getAttractionID() {
         return attractionID;
     }
