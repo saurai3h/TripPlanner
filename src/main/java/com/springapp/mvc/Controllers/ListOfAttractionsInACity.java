@@ -1,7 +1,7 @@
 package com.springapp.mvc.Controllers;
 
 import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelector;
-import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelectorSimple;
+import com.springapp.mvc.AttractionSelectionAlgo.AttractionSelectorBestSubsetOfAttractions;
 import com.springapp.mvc.AttractionSelectionAlgo.GratificationScoreCalculatorSimple;
 import com.springapp.mvc.Models.Attraction;
 import com.springapp.mvc.Models.SqlQueryExecutor;
@@ -31,9 +31,9 @@ public class ListOfAttractionsInACity {
 
 
         JSONArray scheduleForAllDays = new JSONArray();
-        AttractionSelector attractionSelector = new AttractionSelectorSimple();
+        AttractionSelector attractionSelector = new AttractionSelectorBestSubsetOfAttractions(new GratificationScoreCalculatorSimple());
 
-        ArrayList<ArrayList<Attraction>> listOfSchedules = attractionSelector.selectAttraction(new GratificationScoreCalculatorSimple(), city, numberOfDays);
+        ArrayList<ArrayList<Attraction>> listOfSchedules = attractionSelector.selectAttraction(city, numberOfDays);
 
         for(ArrayList<Attraction> scheduleOfOneDay:listOfSchedules) {
 
@@ -51,19 +51,18 @@ public class ListOfAttractionsInACity {
 
     }
 
-    @RequestMapping(value = "/api/allAttractionsForACity", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/getAllAttractions", method = RequestMethod.GET)
     @ResponseBody
-    public String sendAllAttractions(@RequestParam String city, ModelMap model) throws JSONException {
+    public String sendAllAttractions(@RequestParam String city,ModelMap model) throws JSONException{
+        JSONArray listOfAllAttractions = new JSONArray();
 
-        JSONArray scheduleForAllDays = new JSONArray();
-
-        ArrayList<Attraction> listOfAllAttractions = SqlQueryExecutor.getAllAttractionsForACity(city);
-
-        for(Attraction attraction:listOfAllAttractions) {
-            JSONObject attractionJson = new JSONObject(attraction);
-            scheduleForAllDays.put(attractionJson);
+        ArrayList<Attraction> listOfAttractions = SqlQueryExecutor.getAllAttractionsForACity(city);
+        for(Attraction attraction:listOfAttractions){
+            JSONObject attractionJSON = new JSONObject(attraction);
+            listOfAllAttractions.put(attractionJSON);
         }
 
-        return scheduleForAllDays.toString();
+        return listOfAllAttractions.toString();
+
     }
 }

@@ -30,6 +30,11 @@ public class Attraction {
         this.category = category;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return (obj.getClass()==this.getClass() && ((Attraction)obj).getAttractionID() == this.getAttractionID());
+    }
+
     public int getAttractionID() {
         return attractionID;
     }

@@ -1,8 +1,13 @@
 package com.springapp.mvc.Models;
 
+import com.springapp.mvc.AttractionSelectionAlgo.Trip;
 import com.springapp.mvc.Utility.Constants;
+import sun.reflect.generics.tree.Tree;
+
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by kartik.k on 9/25/2014.
@@ -73,37 +78,6 @@ public class SqlQueryExecutor {
         return attractionID;
     }
 
-    public static void cleanAllTables(){
-        try {
-            Connection connection = getConnection();
-            PreparedStatement cleanAttractionDetails=connection.prepareStatement(
-                    "DELETE FROM attractiondetail");
-            PreparedStatement cleanAttractions=connection.prepareStatement(
-                    "DELETE FROM attractionmapping");
-            PreparedStatement cleanAttractionCities=connection.prepareStatement(
-                    "DELETE FROM citymapping");
-            cleanAttractionDetails.execute();
-            cleanAttractions.execute();
-            cleanAttractionCities.execute();
-
-            cleanAttractionCities = connection.prepareStatement(
-                    "ALTER TABLE citymapping AUTO_INCREMENT = 1");
-            cleanAttractions = connection.prepareStatement(
-                    "ALTER TABLE attractionmapping AUTO_INCREMENT = 1");
-
-            cleanAttractionCities.execute();
-            cleanAttractions.execute();
-
-            cleanAttractionDetails.close();
-            cleanAttractions.close();
-            cleanAttractionCities.close();
-            connection.close();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static ArrayList<Attraction> getAllAttractionsForACity(String city) {
         try {
 
@@ -164,5 +138,43 @@ public class SqlQueryExecutor {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static void storeTripStepFunctionCornerInCache(String cityName,Trip trip){
+        Connection connection = getConnection();
+
+        try {
+            PreparedStatement addToCache=connection.prepareStatement(
+                    "INSERT INTO besttripsstepfunctioncornercache (CityID, TripDuration, AttractionsBitString) VALUES (?,?,?);");
+            addToCache.setInt(1,getCityIdByName(cityName));
+            addToCache.setDouble(2,trip.getTimeRequired());
+            addToCache.setInt(3,trip.getAttractionsVisitedBitArray());
+            addToCache.execute();
+            addToCache.close();
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static TreeMap<Double,Integer> getDurationBitStringMapForCornerTrips(String cityName){
+        TreeMap<Double,Integer> durationBitStringMap = new TreeMap<Double, Integer>();
+        Connection connection = getConnection();
+
+        try {
+            PreparedStatement getCornerTrips = connection.prepareStatement(
+                    "SELECT TripDuration, AttractionsBitString FROM  besttripsstepfunctioncornercache WHERE CityID = ?");
+            getCornerTrips.setInt(1,getCityIdByName(cityName));
+            ResultSet trips = getCornerTrips.executeQuery();
+            while (trips.next()){
+                Integer tripBitString = trips.getInt("AttractionsBitString");
+                Double tripDuration= trips.getDouble("TripDuration");
+                durationBitStringMap.put(tripDuration,tripBitString);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    return durationBitStringMap;
     }
 }
