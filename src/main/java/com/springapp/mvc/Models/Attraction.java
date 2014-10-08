@@ -20,6 +20,15 @@ public class Attraction {
     private boolean fee;
     private String type;
     private String reviewURL;
+    private String category;
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
     public int getAttractionID() {
         return attractionID;

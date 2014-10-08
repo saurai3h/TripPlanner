@@ -116,7 +116,7 @@ public class SqlQueryExecutor {
 
                 PreparedStatement findAttractionsStatement;
                 findAttractionsStatement = conn.prepareStatement(
-                        "SELECT tripplanner.attractionmapping.attractionName,tripplanner.attractionmapping.attractionID," +
+                        "SELECT tripplanner.attractioncategorymapping.category, tripplanner.attractionmapping.attractionName,tripplanner.attractionmapping.attractionID," +
                                 "  tripplanner.attractiondetail.noOfReviews, tripplanner.attractiondetail.noOfStars," +
                                 "  tripplanner.attractiondetail.attractionReviewURL,tripplanner.attractiondetail.attractionType," +
                                 "  tripplanner.attractiondetail.attractionFee,tripplanner.attractiondetail.attractionVisitTime," +
@@ -125,7 +125,9 @@ public class SqlQueryExecutor {
                                 "  tripplanner.attractiondetail.additionalInformation,tripplanner.attractiondetail.activities FROM " +
                                 "tripplanner.attractionmapping INNER JOIN tripplanner.attractiondetail " +
                                 "ON tripplanner.attractionmapping.attractionID = " +
-                                "tripplanner.attractiondetail.attractionID WHERE tripplanner.attractionmapping.cityID = ?;");
+                                "tripplanner.attractiondetail.attractionID INNER JOIN tripplanner.attractioncategorymapping " +
+                                "ON tripplanner.attractionmapping.attractionID = tripplanner.attractioncategorymapping.attractionID " +
+                                "WHERE tripplanner.attractionmapping.cityID = ?;");
                 findAttractionsStatement.setInt(1, cityID);
 
                 ResultSet resultSet = findAttractionsStatement.executeQuery();
@@ -133,6 +135,7 @@ public class SqlQueryExecutor {
                 while(resultSet.next()) {
 
                     Attraction attraction = new Attraction();
+                    attraction.setCategory(resultSet.getString("category"));
                     attraction.setName(resultSet.getString("attractionName"));
                     attraction.setAttractionID(resultSet.getInt("attractionID"));
                     attraction.setNoOfReviews(resultSet.getInt("noOfReviews"));

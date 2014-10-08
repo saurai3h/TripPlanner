@@ -3049,6 +3049,11 @@
       <column name="CURRENT_CONNECTIONS" sqlType="BIGINT" precision="19" scale="0" nullable="false" jdbcType="-5"/>
       <column name="TOTAL_CONNECTIONS" sqlType="BIGINT" precision="19" scale="0" nullable="false" jdbcType="-5"/>
     </table>
+    <table name="attractioncategorymapping" schema="" catalog="tripplanner" type="TABLE">
+      <column name="attractionID" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4" def="MA=="/>
+      <column name="category" sqlType="VARCHAR" precision="767" scale="0" nullable="false" jdbcType="12" def="Jyc="/>
+      <primary-key name="PRIMARY" columns="attractionID,category"/>
+    </table>
     <table name="attractiondetail" schema="" catalog="tripplanner" type="TABLE">
       <column name="attractionID" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4"/>
       <column name="attractionReviewURL" sqlType="VARCHAR" precision="255" scale="0" nullable="true" jdbcType="12"/>
@@ -3094,11 +3099,6 @@
       <foreign-key name="fkAttraction2" columns="attractionIDSecond" ref-table="attractionmapping" ref-schema="" ref-catalog="tripplanner" ref-columns="attractionID" update-rule="3" delete-rule="3" deferrability="2"/>
       <index name="fk_distanceAttractionSecond" unique="false" columns="attractionIDSecond"/>
       <index name="fk_distanceCity" unique="false" columns="cityID"/>
-    </table>
-    <table name="typeandcategory" schema="" catalog="tripplanner" type="TABLE">
-      <column name="type" sqlType="VARCHAR" precision="50" scale="0" nullable="false" jdbcType="12"/>
-      <column name="category" sqlType="VARCHAR" precision="50" scale="0" nullable="false" jdbcType="12"/>
-      <primary-key name="PRIMARY" columns="type"/>
     </table>
   </data-source>
 </component>
