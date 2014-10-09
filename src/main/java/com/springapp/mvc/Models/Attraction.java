@@ -28,6 +28,7 @@ public class Attraction {
 
     public void setCategory(String category) {
         this.category = category;
+
     }
 
     @Override

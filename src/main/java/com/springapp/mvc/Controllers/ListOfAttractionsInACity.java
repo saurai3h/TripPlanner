@@ -14,6 +14,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Saurabh Paliwal on 25/9/14.
@@ -33,9 +34,9 @@ public class ListOfAttractionsInACity {
         JSONArray scheduleForAllDays = new JSONArray();
         AttractionSelector attractionSelector = new AttractionSelectorBestSubsetOfAttractions(new GratificationScoreCalculatorSimple());
 
-        ArrayList<ArrayList<Attraction>> listOfSchedules = attractionSelector.selectAttraction(city, numberOfDays);
+        ArrayList<List<Attraction>> listOfSchedules = attractionSelector.selectAttraction(city, numberOfDays);
 
-        for(ArrayList<Attraction> scheduleOfOneDay:listOfSchedules) {
+        for(List<Attraction> scheduleOfOneDay:listOfSchedules) {
 
             JSONArray oneDayScheduleJSON = new JSONArray();
 

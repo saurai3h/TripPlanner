@@ -3,6 +3,7 @@ package com.springapp.mvc.AttractionSelectionAlgo;
 import com.springapp.mvc.Models.Attraction;
 import com.springapp.mvc.Models.SqlQueryExecutor;
 
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -15,7 +16,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
     }
 
     @Override
-    public ArrayList<ArrayList<Attraction>> selectAttraction(String cityName, int noOfDays) {
+    public ArrayList<List<Attraction>> selectAttraction(String cityName, int noOfDays) {
         TreeMap<Double,Integer> tripsAtCornersOfStepFunction = SqlQueryExecutor.getDurationBitStringMapForCornerTrips(cityName);
         Double minTravelTimeInHrs = 5.5*noOfDays;
         Double maxTravelTimeInHrs = 12.5*noOfDays;
@@ -35,7 +36,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
             }
         });
         double maxRewardRatio=0;
-        Set<Attraction> mostRewardingAttractionSet = new HashSet<Attraction>();
+        ArrayList<Attraction> mostRewardingAttractionSet = new ArrayList<Attraction>();
         for(Double feasibleTripDuration:feasibleTripMap.keySet()){
 
             double extraTimeSpentOverMinTime = feasibleTripDuration - minTravelTimeInHrs;
@@ -48,9 +49,164 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
 
             if(rewardRatio>maxRewardRatio){
                 maxRewardRatio = rewardRatio;
-                mostRewardingAttractionSet = getAttractionSetFromBitString(bitString, sortedListOfAttractions);
+                mostRewardingAttractionSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);
             }
         }
+        return splitSetOfAttractionSetIntoDays(mostRewardingAttractionSet,noOfDays);
+    }
+
+    private ArrayList<List<Attraction>> splitSetOfAttractionSetIntoDays(final ArrayList<Attraction> listOfAttractions, int noOfDays) {
+        ArrayList<List<Attraction>> schedule = new ArrayList<List<Attraction>>();
+
+
+        int noOfAttractions = listOfAttractions.size();
+        final Double[][] distanceMatrix = getDistanceMatrix(listOfAttractions);
+
+        Attraction westernmostAttraction = null;
+        for (Attraction attraction:listOfAttractions){
+            if(westernmostAttraction==null||westernmostAttraction.getLongitude()>attraction.getLongitude()){
+                westernmostAttraction=attraction;
+            }
+        }
+        ArrayList<Attraction> orderOfTraversalAfterBasicTSPHeurisic = BestPossibleSubsetCacher.TSPSolverForAttractions(
+                listOfAttractions, westernmostAttraction,
+                new DistanceCalculator<Attraction>() {
+                    @Override
+                    public double getDistance(Attraction src, Attraction dest) {
+                        return distanceMatrix[listOfAttractions.indexOf(src)][listOfAttractions.indexOf(dest)];
+                    }
+                });
+        ArrayList<Integer> reorderedAttracionsIndexArray =new ArrayList<Integer>();
+        for (int i=0;i<noOfAttractions;i++) {
+            reorderedAttracionsIndexArray.add(listOfAttractions.indexOf(orderOfTraversalAfterBasicTSPHeurisic.get(i)));
+        }
+
+        reorderedAttracionsIndexArray = apply2optTechniqueForAttractionTSP(distanceMatrix, reorderedAttracionsIndexArray);
+
+        orderOfTraversalAfterBasicTSPHeurisic = new ArrayList<Attraction>();
+        for (Integer reorderedAttractionIndex=0;reorderedAttractionIndex<noOfAttractions;reorderedAttractionIndex++){
+            orderOfTraversalAfterBasicTSPHeurisic.add(listOfAttractions.get(reorderedAttracionsIndexArray.get(reorderedAttractionIndex)));
+        }
+
+        Double totalTimeNeededToCompleteTripNonStop = 0.0;
+        Attraction prevAttraction = null;
+        for (Attraction attraction:orderOfTraversalAfterBasicTSPHeurisic){
+            if(prevAttraction!=null){
+                totalTimeNeededToCompleteTripNonStop += distanceMatrix[listOfAttractions.indexOf(prevAttraction)][listOfAttractions.indexOf(attraction)];
+            }
+            totalTimeNeededToCompleteTripNonStop+=attraction.getVisitTime();
+        }
+            Double avgTimeNeededToSpendEveryRemainingDay = totalTimeNeededToCompleteTripNonStop/noOfDays;
+
+
+        int noOfDaysRemaining = noOfDays;
+        int indexOfFirstAttractionForToday = 0;
+        double timeSpentSoFarToday=0.0;
+        for (int i = 0; i < orderOfTraversalAfterBasicTSPHeurisic.size(); i++) {
+            Attraction attraction = orderOfTraversalAfterBasicTSPHeurisic.get(i);
+
+            timeSpentSoFarToday += attraction.getVisitTime();
+
+            if (timeSpentSoFarToday > avgTimeNeededToSpendEveryRemainingDay-2.5){
+                //need to look ahead and find the best point to segment this day
+                Attraction curAttraction = orderOfTraversalAfterBasicTSPHeurisic.get(i);
+                Attraction nextAttraction = orderOfTraversalAfterBasicTSPHeurisic.get(i + 1);
+                double largestDistanceSeenSoFar = 0.0;
+                int lastAttractionForBestSegmentSeenSoFar = i;
+                double timeSpentAfterBestSegmentSoFar = timeSpentSoFarToday;
+                while (timeSpentSoFarToday<avgTimeNeededToSpendEveryRemainingDay+2.5){
+
+                    if (distanceMatrix[listOfAttractions.indexOf(curAttraction)][listOfAttractions.indexOf(nextAttraction)]>largestDistanceSeenSoFar){
+                        largestDistanceSeenSoFar = distanceMatrix[listOfAttractions.indexOf(curAttraction)][listOfAttractions.indexOf(nextAttraction)];
+                        lastAttractionForBestSegmentSeenSoFar = i;
+                        timeSpentAfterBestSegmentSoFar = timeSpentSoFarToday;
+                    }
+                    i++;
+                    timeSpentSoFarToday += distanceMatrix[listOfAttractions.indexOf(curAttraction)][listOfAttractions.indexOf(nextAttraction)];
+                    curAttraction = nextAttraction;
+                    nextAttraction = orderOfTraversalAfterBasicTSPHeurisic.get(i + 1);
+                    timeSpentSoFarToday += curAttraction.getVisitTime();
+                }
+                i=lastAttractionForBestSegmentSeenSoFar;
+                timeSpentSoFarToday = 0;
+                avgTimeNeededToSpendEveryRemainingDay = (avgTimeNeededToSpendEveryRemainingDay*noOfDaysRemaining -
+                timeSpentAfterBestSegmentSoFar-largestDistanceSeenSoFar)/(noOfDaysRemaining-1);
+                noOfDaysRemaining--;
+                schedule.add(orderOfTraversalAfterBasicTSPHeurisic.subList(indexOfFirstAttractionForToday,i+1));
+                indexOfFirstAttractionForToday = i+1;
+                if(noOfDaysRemaining==1){
+                    schedule.add(orderOfTraversalAfterBasicTSPHeurisic.subList(i,orderOfTraversalAfterBasicTSPHeurisic.size()));
+                    break;
+                }
+            }
+            else {
+                if (i < listOfAttractions.size()) {
+                    timeSpentSoFarToday += distanceMatrix[listOfAttractions.indexOf(orderOfTraversalAfterBasicTSPHeurisic.get(i+1))]
+                            [listOfAttractions.indexOf(attraction)];
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        return schedule;
+    }
+
+    private Double[][] getDistanceMatrix(ArrayList<Attraction> listOfAttractions) {
+        int noOfAttractions = listOfAttractions.size();
+        Double[][] distanceMatrix = new Double[noOfAttractions][noOfAttractions];
+        for (int row = 0;row< noOfAttractions;row++){
+            for (int col = 0;col< noOfAttractions;col++){
+                if(row==col) {
+                    distanceMatrix[row][col] = Double.valueOf(0);
+                }
+                else {
+                    try {
+                        distanceMatrix[row][col] = SqlQueryExecutor.getDistanceBetweenAttractions(
+                                listOfAttractions.get(row).getAttractionID(), listOfAttractions.get(col).getAttractionID()
+                        )/30000;
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return distanceMatrix;
+    }
+
+    private ArrayList<Integer> apply2optTechniqueForAttractionTSP(Double[][] distanceMatrix, ArrayList<Integer> reorderedAttracionsIndexArray) {
+        int noOfAttractions;
+        int firstEdgeDest=1;
+        noOfAttractions = reorderedAttracionsIndexArray.size();
+        while (firstEdgeDest<noOfAttractions-2){
+            int secondEdgeSrc = firstEdgeDest + 1;
+            while (secondEdgeSrc<noOfAttractions-1){
+
+                double currentEdgePairTotalLength = distanceMatrix[reorderedAttracionsIndexArray.get(firstEdgeDest - 1)][reorderedAttracionsIndexArray.get(firstEdgeDest)]+
+                        distanceMatrix[reorderedAttracionsIndexArray.get(secondEdgeSrc)][reorderedAttracionsIndexArray.get(secondEdgeSrc + 1)];
+                double totalEdgePairLengthAfterSwapping =distanceMatrix[reorderedAttracionsIndexArray.get(firstEdgeDest - 1)][reorderedAttracionsIndexArray.get(secondEdgeSrc)]+
+                        distanceMatrix[reorderedAttracionsIndexArray.get(firstEdgeDest)][reorderedAttracionsIndexArray.get(secondEdgeSrc + 1)];
+                if(totalEdgePairLengthAfterSwapping<currentEdgePairTotalLength){
+                    //swap
+                    ArrayList<Integer> newReorderedAttractionIndexArray = new ArrayList<Integer>();
+                    newReorderedAttractionIndexArray.addAll(reorderedAttracionsIndexArray.subList(0,firstEdgeDest));
+                    List<Integer> subListBetweenTheTwoEdges = reorderedAttracionsIndexArray.subList(firstEdgeDest, secondEdgeSrc + 1);
+                    Collections.reverse(subListBetweenTheTwoEdges);
+                    newReorderedAttractionIndexArray.addAll(subListBetweenTheTwoEdges);
+                    newReorderedAttractionIndexArray.addAll(reorderedAttracionsIndexArray.subList(secondEdgeSrc+1,noOfAttractions));
+                    reorderedAttracionsIndexArray = newReorderedAttractionIndexArray;
+                }
+                else {
+                    secondEdgeSrc++;
+                }
+            }
+            firstEdgeDest++;
+        }
+        return reorderedAttracionsIndexArray;
+    }
+
+
+    private ArrayList<ArrayList<Attraction>> splitSetOfAttractionSetIntoDays(ArrayList<Attraction> mostRewardingAttractionSet) {
         ArrayList<Attraction> listOfAttractionsToVisit = new ArrayList<Attraction>(mostRewardingAttractionSet);
         ArrayList<ArrayList<Attraction>> schedule = new ArrayList<ArrayList<Attraction>>();
         schedule.add(listOfAttractionsToVisit);
@@ -58,14 +214,13 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
     }
 
 
+    public ArrayList<Attraction> getAttractionListFromBitString(Integer bitString, ArrayList<Attraction> sortedListOfAttractions) {
 
-    public Set<Attraction> getAttractionSetFromBitString(Integer bitString,ArrayList<Attraction> sortedListOfAttractions) {
-
-        Set<Attraction> subsetOfAttractions = new HashSet<Attraction>();
+        ArrayList<Attraction> subsetOfAttractions = new ArrayList<Attraction>();
 
         for (int attractionNo=0;attractionNo< sortedListOfAttractions.size();attractionNo++){
             if(bitString%2==1){
-                subsetOfAttractions.add(sortedListOfAttractions.get(attractionNo));
+                subsetOfAttractions.add(0,sortedListOfAttractions.get(attractionNo));
             }
             bitString = bitString >> 1;
         }
@@ -73,7 +228,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
     }
 
     public double getGratificationScoreFromBitString(Integer bitString, ArrayList<Attraction> sortedArrayListOfAttractions){
-        Set<Attraction> setOfAttractions = getAttractionSetFromBitString(bitString, sortedArrayListOfAttractions);
+        ArrayList<Attraction> setOfAttractions = getAttractionListFromBitString(bitString, sortedArrayListOfAttractions);
         double totalGratificationScore = 0;
         for(Attraction attraction:setOfAttractions){
             totalGratificationScore+=gratificationScoreCalculator.getGratificationScoreForAttraction(attraction);

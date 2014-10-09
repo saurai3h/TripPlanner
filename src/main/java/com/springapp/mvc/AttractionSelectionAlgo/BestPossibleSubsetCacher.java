@@ -10,19 +10,20 @@ import java.util.*;
  * Created by kartik.k on 10/7/2014.
  */
 public class BestPossibleSubsetCacher {
+
+
     String city;
     Double distanceMatrix[][];
     Double gratificationScoreArray [];
     private ArrayList<Attraction> sortedListOfAttractions;
     GratificationScoreCalculator scoreCalculator;
-
     public TreeMap<Double, Trip> tripsSortedByTimeTakenAsc(){
 
         TreeMap<Double,Trip> tripsStepCorners = new TreeMap<Double, Trip>();
         int stepsizeForDisplay = 1000000;
         for(Integer subsetOfAttractionIndex =15*(int)Math.pow(2, sortedListOfAttractions.size()-4);subsetOfAttractionIndex<Math.pow(2, sortedListOfAttractions.size());subsetOfAttractionIndex+=4){
             if(subsetOfAttractionIndex% stepsizeForDisplay == 0){
-                System.out.println(Integer.toString(subsetOfAttractionIndex/ stepsizeForDisplay)+" steps done..(mill)");
+                System.out.println(Integer.toString(subsetOfAttractionIndex / stepsizeForDisplay) + " steps done..(mill)");
             }
             Set<Attraction> subsetOfAttractions = getAttractionSetFromBitString(subsetOfAttractionIndex);
             double lengthOfCurrentTrip =getMinTimeRequiredToVisitGivenAttractions(subsetOfAttractions);
@@ -35,9 +36,15 @@ public class BestPossibleSubsetCacher {
                     nearestLargerTripEntry = tripsStepCorners.higherEntry(lengthOfCurrentTrip);
                 }
                 tripsStepCorners.put(lengthOfCurrentTrip,currentTrip);
-                System.out.println("found a good trip :" + Integer.toBinaryString(currentTrip.getAttractionsVisitedBitArray()));
+//                System.out.println("found a good trip :" + Integer.toBinaryString(currentTrip.getAttractionsVisitedBitArray()));
             }
 
+        }
+
+
+
+        for(Double tripDuration:tripsStepCorners.keySet()){
+            SqlQueryExecutor.storeTripStepFunctionCornerInCache(city,tripsStepCorners.get(tripDuration));
         }
         return tripsStepCorners;
     }
@@ -111,13 +118,35 @@ public class BestPossibleSubsetCacher {
     }
 
     public double estimatedMinDistanceTravelled(Set<Attraction> attractionsToVisit) {
-        double timeSpentInTravelling = 0;
+        Random rand = new Random();
+        int randomAttractionIndex = rand.nextInt(attractionsToVisit.size());
+        Attraction lastVisitedAttraction = sortedListOfAttractions.get(randomAttractionIndex);
+        ArrayList<Attraction> orderOfTraversalOfAttractions = TSPSolverForAttractions(attractionsToVisit, lastVisitedAttraction,
+            new DistanceCalculator<Attraction>() {
+                @Override
+                public double getDistance(Attraction src, Attraction dest) {
+                    return distanceMatrix[sortedListOfAttractions.indexOf(src)][sortedListOfAttractions.indexOf(dest)];
+                }
+        });
+        Double timeSpentInTravelling = 0.0;
+        Attraction previousAttraction = null;
+        for(Attraction attraction:orderOfTraversalOfAttractions){
+            if (previousAttraction != null) {
+                timeSpentInTravelling+=distanceMatrix[sortedListOfAttractions.indexOf(previousAttraction)]
+                        [sortedListOfAttractions.indexOf(attraction)];
+            }
+            previousAttraction = attraction;
+
+        }
+        return timeSpentInTravelling;
+    }
+
+    public static ArrayList<Attraction> TSPSolverForAttractions(Collection<Attraction> attractionsToVisit, Attraction lastVisitedAttraction, DistanceCalculator<Attraction> distanceCalculator) {
         ArrayList<Attraction> listOfUnvisitedAttractions
                 = new ArrayList<Attraction>(attractionsToVisit);
-        Random rand = new Random();
-        int randomAttractionIndex = rand.nextInt(listOfUnvisitedAttractions.size());
-        Attraction lastVisitedAttraction = sortedListOfAttractions.get(randomAttractionIndex);
-        listOfUnvisitedAttractions.remove(randomAttractionIndex);
+        ArrayList<Attraction> orderOfTraversal = new ArrayList<Attraction>();
+        orderOfTraversal.add(lastVisitedAttraction);
+        listOfUnvisitedAttractions.remove(lastVisitedAttraction);
         while (!listOfUnvisitedAttractions.isEmpty()) {
             double distanceFromClosestAttractionSeenSoFar = -1;
             Attraction closestAttraction = null;
@@ -127,17 +156,12 @@ public class BestPossibleSubsetCacher {
                 }
                 else {
                     if(distanceFromClosestAttractionSeenSoFar==-1){
-                        distanceFromClosestAttractionSeenSoFar = getDistance(
-                                sortedListOfAttractions.indexOf(lastVisitedAttraction),
-                                sortedListOfAttractions.indexOf(attraction)
-                        );
+                        distanceFromClosestAttractionSeenSoFar = distanceCalculator.getDistance(lastVisitedAttraction,attraction);
+
                         closestAttraction = attraction;
                     }
                     else {
-                       double distanceFromSrc = distanceFromClosestAttractionSeenSoFar = getDistance(
-                               sortedListOfAttractions.indexOf(lastVisitedAttraction),
-                               sortedListOfAttractions.indexOf(attraction)
-                       );
+                       double distanceFromSrc = distanceFromClosestAttractionSeenSoFar = distanceCalculator.getDistance(lastVisitedAttraction, attraction);
                         if(distanceFromClosestAttractionSeenSoFar>distanceFromSrc){
                             distanceFromClosestAttractionSeenSoFar = distanceFromSrc;
                             closestAttraction = attraction;
@@ -147,13 +171,14 @@ public class BestPossibleSubsetCacher {
             }
             if(closestAttraction!=null) {
                 lastVisitedAttraction = closestAttraction;
+                orderOfTraversal.add(closestAttraction);
 //                System.out.print("'"+Double.toString(closestAttraction.getLatitude())+","+Double.toString(closestAttraction.getLongitude()));
 
-                timeSpentInTravelling += distanceFromClosestAttractionSeenSoFar;
+
             }
             listOfUnvisitedAttractions.remove(lastVisitedAttraction);
         }
-        return timeSpentInTravelling;
+        return orderOfTraversal;
     }
 
     double getDistance(int srcAttrattionIndex, int destAttractionIndex) {

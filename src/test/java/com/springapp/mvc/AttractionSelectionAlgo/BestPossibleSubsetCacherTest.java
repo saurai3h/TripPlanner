@@ -2,6 +2,7 @@ package com.springapp.mvc.AttractionSelectionAlgo;
 
 import com.springapp.mvc.Models.Attraction;
 import com.springapp.mvc.Models.SqlQueryExecutor;
+import com.springapp.mvc.Utility.Constants;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,11 +24,13 @@ public class BestPossibleSubsetCacherTest {
 
     @Test
     public void testGetBestTrips() throws Exception {
-       TreeMap<Double, Trip> bestTripsSortedMap = bestPossibleSubsetCacher.tripsSortedByTimeTakenAsc();
-        for(Double tripDuration:bestTripsSortedMap.keySet()){
-            System.out.println(Double.toString(tripDuration)+":"+bestTripsSortedMap.get(tripDuration).getGratificationScore());
-            SqlQueryExecutor.storeTripStepFunctionCornerInCache("Paris",bestTripsSortedMap.get(tripDuration));
+        for(String cityName: Constants.LIST_OF_CITIES){
+            if(cityName.equals("Bangkok")||cityName.equals("Seoul")||cityName.equals("London"))
+                continue;
+            System.out.println("caching "+cityName);
+            new BestPossibleSubsetCacher(cityName,new GratificationScoreCalculatorSimple()).tripsSortedByTimeTakenAsc();
         }
+
     }
 
     @Test
