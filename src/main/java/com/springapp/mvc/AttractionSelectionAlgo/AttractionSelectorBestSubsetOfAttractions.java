@@ -57,7 +57,8 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                 mostRewardingAttractionSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);
             }
         }
-        return splitSetOfAttractionSetIntoDays(mostRewardingAttractionSet,noOfDays);
+        ArrayList<List<Attraction>> basicSchedule = splitSetOfAttractionSetIntoDays(mostRewardingAttractionSet, noOfDays);
+        return basicSchedule;
     }
 
     private ArrayList<List<Attraction>> splitSetOfAttractionSetIntoDays(final ArrayList<Attraction> listOfAttractions, int noOfDays) {
@@ -156,6 +157,38 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                 }
             }
         }
+
+        if(schedule.size()>1) {
+            Collections.sort(schedule, new Comparator<List<Attraction>>() {
+                @Override
+                public int compare(List<Attraction> o1, List<Attraction> o2) {
+                    double firstDayLength = 0;
+                    double secondDayLength = 0;
+                    Attraction prevAttraction = null;
+                    for (Attraction attraction : o1) {
+                        if (prevAttraction != null) {
+                            firstDayLength += distanceMatrix[listOfAttractions.indexOf(attraction)][listOfAttractions.indexOf(prevAttraction)];
+                        }
+                        firstDayLength += attraction.getVisitTime();
+                    }
+                    prevAttraction = null;
+                    for (Attraction attraction : o2) {
+                        if (prevAttraction != null) {
+                            secondDayLength += distanceMatrix[listOfAttractions.indexOf(attraction)][listOfAttractions.indexOf(prevAttraction)];
+                        }
+                        secondDayLength += attraction.getVisitTime();
+                    }
+                    return (int) (firstDayLength - secondDayLength);
+                }
+            });
+            List<Attraction> smallestDay = schedule.get(0);
+            List<Attraction> secondSmallestDay = schedule.get(1);
+            Collections.shuffle(schedule);
+            schedule.remove(smallestDay);
+            schedule.remove(secondSmallestDay);
+            schedule.add(smallestDay);
+            schedule.add(0,secondSmallestDay);
+        }
         return schedule;
     }
 
@@ -185,6 +218,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
         int noOfAttractions;
         int firstEdgeDest=1;
         noOfAttractions = reorderedAttracionsIndexArray.size();
+        reorderedAttracionsIndexArray.add(reorderedAttracionsIndexArray.get(0));
         while (firstEdgeDest<noOfAttractions-2){
             int secondEdgeSrc = firstEdgeDest + 1;
             while (secondEdgeSrc<noOfAttractions-1){
