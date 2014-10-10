@@ -2,6 +2,7 @@ package com.springapp.mvc.AttractionSelectionAlgo;
 
 import com.springapp.mvc.Models.Attraction;
 import com.springapp.mvc.Models.SqlQueryExecutor;
+import com.springapp.mvc.Utility.Constants;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -18,60 +19,45 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
     @Override
     public ArrayList<List<Attraction>> selectAttraction(String cityName, int noOfDays) {
         TreeMap<Double,Integer> tripsAtCornersOfStepFunction = SqlQueryExecutor.getDurationBitStringMapForCornerTrips(cityName);
-        Double minTravelTimeInHrs = 5.5*noOfDays;
-        Double maxTravelTimeInHrs = 12.5*noOfDays;
-        final ArrayList<Attraction> sortedListOfAttractions = SqlQueryExecutor.getAllAttractionsForACity(cityName);
-        final Double distanceMatrix[][] = getDistanceMatrix(sortedListOfAttractions);
-        DistanceCalculator<Attraction> distanceCalculator = new DistanceCalculator<Attraction>() {
-            @Override
-            public double getDistance(Attraction src, Attraction dest) {
-                return distanceMatrix[sortedListOfAttractions.indexOf(src)][sortedListOfAttractions.indexOf(dest)];
-            }
-        };
-        SortedMap<Double, Integer> feasibleTripMap = tripsAtCornersOfStepFunction.subMap(minTravelTimeInHrs, maxTravelTimeInHrs);
+        return getBestScheduleFromBitStringMap(cityName, noOfDays, tripsAtCornersOfStepFunction);
+    }
 
-        Collections.sort(sortedListOfAttractions,new Comparator<Attraction>() {
+    public ArrayList<List<Attraction>> getBestScheduleFromBitStringMap(String cityName, int noOfDays, TreeMap<Double, Integer> tripsAtCornersOfStepFunction) {
+        Double minTravelTimeInHrs = Constants.MIN_AVG_TRAVEL_TIME_PER_DAY*noOfDays;
+        Double maxTravelTimeInHrs = Constants.MAX_AVG_TRAVEL_TIME_PER_DAY *noOfDays;
+        ArrayList<Attraction> sortedListOfAttractions = SqlQueryExecutor.getAllAttractionsForACity(cityName);
+        SortedMap<Double, Integer> feasibleTripMap = tripsAtCornersOfStepFunction.subMap(minTravelTimeInHrs, maxTravelTimeInHrs);
+        Double shortestFeasibleTripKey = tripsAtCornersOfStepFunction.floorKey(minTravelTimeInHrs);
+        if(shortestFeasibleTripKey == null){
+            shortestFeasibleTripKey = tripsAtCornersOfStepFunction.firstKey();
+            minTravelTimeInHrs = 0.0;
+            }
+        Double minFeasibleGratificationScore = getGratificationScoreFromBitString(tripsAtCornersOfStepFunction.get(shortestFeasibleTripKey),sortedListOfAttractions);
+
+        Collections.sort(sortedListOfAttractions, new Comparator<Attraction>() {
             @Override
             public int compare(Attraction o1, Attraction o2) {
                 return (int) (gratificationScoreCalculator.getGratificationScoreForAttraction(o1) - gratificationScoreCalculator.getGratificationScoreForAttraction(o2));
             }
         });
         double maxRewardRatio=0;
-        ArrayList<List<Attraction>> mostRewardingSchedule = null;
+        ArrayList<Attraction> mostRewardingAttractionSet = new ArrayList<Attraction>();
+        for(Double feasibleTripDuration:feasibleTripMap.keySet()){
 
-
-        for(Double estimatedFeasibleTripDuration:feasibleTripMap.keySet()){
-            System.out.println("generating optimal schedule..");
-            Integer bitString = feasibleTripMap.get(estimatedFeasibleTripDuration);
-            ArrayList<Attraction> listOfAttractionsSelectedInThisSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);
-            ArrayList<List<Attraction>> scheduleForThisTrip = splitSetOfAttractionSetIntoDays(listOfAttractionsSelectedInThisSet, noOfDays);
-            double timeSpent = getTotalTimeSpentInTransitForASchedule(scheduleForThisTrip, distanceCalculator);
-            for (Attraction attraction:listOfAttractionsSelectedInThisSet){
-                timeSpent+= attraction.getVisitTime();
+            double extraTimeSpentOverMinTime = feasibleTripDuration - minTravelTimeInHrs;
+            Integer bitString = feasibleTripMap.get(feasibleTripDuration);
+            double additionalGratificationGot = getGratificationScoreFromBitString(bitString,sortedListOfAttractions) - minFeasibleGratificationScore;
+            if(extraTimeSpentOverMinTime == 0){
+                continue;
             }
-            double gratificationReceived = getGratificationScoreFromBitString(bitString,sortedListOfAttractions);
-            double rewardRatio = gratificationReceived / timeSpent;
+            double rewardRatio = additionalGratificationGot/extraTimeSpentOverMinTime;
+
             if(rewardRatio>maxRewardRatio){
                 maxRewardRatio = rewardRatio;
-                mostRewardingSchedule = scheduleForThisTrip;
+                mostRewardingAttractionSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);
             }
         }
-//        for(Double feasibleTripDuration:feasibleTripMap.keySet()){
-//
-//            double extraTimeSpentOverMinTime = feasibleTripDuration - shortestFeasibleTripKey;
-//            Integer bitString = feasibleTripMap.get(feasibleTripDuration);
-//            double additionalGratificationGot = getGratificationScoreFromBitString(bitString,sortedListOfAttractions) - minFeasibleGratificationScore;
-//            if(extraTimeSpentOverMinTime == 0){
-//                continue;
-//            }
-//            double rewardRatio = additionalGratificationGot/extraTimeSpentOverMinTime;
-//
-//            if(rewardRatio>maxRewardRatio){
-//                maxRewardRatio = rewardRatio;
-//                mostRewardingAttractionSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);
-//            }
-//        }
-        return mostRewardingSchedule;
+        return splitSetOfAttractionSetIntoDays(mostRewardingAttractionSet,noOfDays);
     }
 
     private ArrayList<List<Attraction>> splitSetOfAttractionSetIntoDays(final ArrayList<Attraction> listOfAttractions, int noOfDays) {
@@ -126,14 +112,16 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
 
             timeSpentSoFarToday += attraction.getVisitTime();
 
-            if (timeSpentSoFarToday > avgTimeNeededToSpendEveryRemainingDay-2.5){
+            if (timeSpentSoFarToday > avgTimeNeededToSpendEveryRemainingDay- Constants.MAX_LOWER_MARGIN_FOR_DAY_LENGTH_ADVANCED_ATTRACTION_SELECTOR
+                    && timeSpentSoFarToday>Constants.MIN_DAY_LENGTH_ABSOLUTE){
                 //need to look ahead and find the best point to segment this day
                 Attraction curAttraction = orderOfTraversalAfterBasicTSPHeurisic.get(i);
                 Attraction nextAttraction = orderOfTraversalAfterBasicTSPHeurisic.get(i + 1);
                 double largestDistanceSeenSoFar = 0.0;
                 int lastAttractionForBestSegmentSeenSoFar = i;
                 double timeSpentAfterBestSegmentSoFar = timeSpentSoFarToday;
-                while (timeSpentSoFarToday<avgTimeNeededToSpendEveryRemainingDay+2.5){
+                while (timeSpentSoFarToday<avgTimeNeededToSpendEveryRemainingDay+Constants.MAX_HIGHER_MARGIN_FOR_DAY_LENGTH_ADVANCED_ATTRACTION_SELECTOR
+                        &&timeSpentAfterBestSegmentSoFar<Constants.MAX_DAY_LENGTH_ABSOLUTE){
 
                     if (distanceMatrix[listOfAttractions.indexOf(curAttraction)][listOfAttractions.indexOf(nextAttraction)]>largestDistanceSeenSoFar){
                         largestDistanceSeenSoFar = distanceMatrix[listOfAttractions.indexOf(curAttraction)][listOfAttractions.indexOf(nextAttraction)];
@@ -214,6 +202,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                     newReorderedAttractionIndexArray.addAll(subListBetweenTheTwoEdges);
                     newReorderedAttractionIndexArray.addAll(reorderedAttracionsIndexArray.subList(secondEdgeSrc+1,noOfAttractions));
                     reorderedAttracionsIndexArray = newReorderedAttractionIndexArray;
+                    secondEdgeSrc = firstEdgeDest+1;
                 }
                 else {
                     secondEdgeSrc++;
@@ -222,6 +211,14 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
             firstEdgeDest++;
         }
         return reorderedAttracionsIndexArray;
+    }
+
+
+    private ArrayList<ArrayList<Attraction>> splitSetOfAttractionSetIntoDays(ArrayList<Attraction> mostRewardingAttractionSet) {
+        ArrayList<Attraction> listOfAttractionsToVisit = new ArrayList<Attraction>(mostRewardingAttractionSet);
+        ArrayList<ArrayList<Attraction>> schedule = new ArrayList<ArrayList<Attraction>>();
+        schedule.add(listOfAttractionsToVisit);
+        return schedule;
     }
 
 

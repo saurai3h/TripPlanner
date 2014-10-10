@@ -19,6 +19,17 @@ public class BestPossibleSubsetCacher {
     GratificationScoreCalculator scoreCalculator;
     public TreeMap<Double, Trip> tripsSortedByTimeTakenAsc(){
 
+        TreeMap<Double, Trip> tripsStepCorners = getBestSubsetsOfAttractionStepFunction();
+
+
+
+        for(Double tripDuration:tripsStepCorners.keySet()){
+            SqlQueryExecutor.storeTripStepFunctionCornerInCache(city,tripsStepCorners.get(tripDuration));
+        }
+        return tripsStepCorners;
+    }
+
+    private TreeMap<Double, Trip> getBestSubsetsOfAttractionStepFunction() {
         TreeMap<Double,Trip> tripsStepCorners = new TreeMap<Double, Trip>();
         int stepsizeForDisplay = 1000000;
         for(Integer subsetOfAttractionIndex =15*(int)Math.pow(2, sortedListOfAttractions.size()-4);subsetOfAttractionIndex<Math.pow(2, sortedListOfAttractions.size());subsetOfAttractionIndex+=4){
@@ -39,12 +50,6 @@ public class BestPossibleSubsetCacher {
 //                System.out.println("found a good trip :" + Integer.toBinaryString(currentTrip.getAttractionsVisitedBitArray()));
             }
 
-        }
-
-
-
-        for(Double tripDuration:tripsStepCorners.keySet()){
-            SqlQueryExecutor.storeTripStepFunctionCornerInCache(city,tripsStepCorners.get(tripDuration));
         }
         return tripsStepCorners;
     }
@@ -113,7 +118,7 @@ public class BestPossibleSubsetCacher {
         for (Attraction attraction : attractionsToVisit) {
             totalTimeSpent += attraction.getVisitTime();
         }
-        totalTimeSpent+=(estimatedMinDistanceTravelled(attractionsToVisit)/30000);
+        totalTimeSpent += ((estimatedMinDistanceTravelled(attractionsToVisit) / 30000) * 0.666);
         return totalTimeSpent;
     }
 
@@ -195,5 +200,43 @@ public class BestPossibleSubsetCacher {
 //                * (Math.sin(longDifference/2))*(Math.sin(longDifference/2));
 //        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return distanceMatrix[srcAttrattionIndex][destAttractionIndex];
+    }
+
+
+    public TreeMap<Double, Trip> getSmallBestSubsetsOfAttractionStepFunction() {
+        TreeMap<Double,Trip> tripsStepCorners = new TreeMap<Double, Trip>();
+        int stepsizeForDisplay = 1000000;
+        for(Integer subsetOfAttractionIndex =1;subsetOfAttractionIndex<Math.pow(2, sortedListOfAttractions.size());subsetOfAttractionIndex+=4){
+            if(subsetOfAttractionIndex% stepsizeForDisplay == 0){
+                System.out.println(Integer.toString(subsetOfAttractionIndex / stepsizeForDisplay) + " steps done..(mill)");
+            }
+            if(countNoOfSetBits(subsetOfAttractionIndex)>4){
+                continue;
+            }
+            Set<Attraction> subsetOfAttractions = getAttractionSetFromBitString(subsetOfAttractionIndex);
+            double lengthOfCurrentTrip =getMinTimeRequiredToVisitGivenAttractions(subsetOfAttractions);
+            Trip currentTrip =new Trip(subsetOfAttractionIndex,getGratificationScoreFromBitString(subsetOfAttractionIndex),lengthOfCurrentTrip);
+            Map.Entry<Double, Trip> nearestSmallerTripEntry = tripsStepCorners.lowerEntry(lengthOfCurrentTrip);
+            if(nearestSmallerTripEntry==null || nearestSmallerTripEntry.getValue().getGratificationScore()<currentTrip.getGratificationScore()){
+                Map.Entry<Double, Trip> nearestLargerTripEntry = tripsStepCorners.higherEntry(lengthOfCurrentTrip);
+                while (nearestLargerTripEntry!=null && nearestLargerTripEntry.getValue().getGratificationScore()<currentTrip.getGratificationScore()){
+                    tripsStepCorners.remove(nearestLargerTripEntry.getKey());
+                    nearestLargerTripEntry = tripsStepCorners.higherEntry(lengthOfCurrentTrip);
+                }
+                tripsStepCorners.put(lengthOfCurrentTrip,currentTrip);
+//                System.out.println("found a good trip :" + Integer.toBinaryString(currentTrip.getAttractionsVisitedBitArray()));
+            }
+
+        }
+        return tripsStepCorners;
+    }
+
+    int countNoOfSetBits(int n){
+        int count = 0;
+        while (n>0){
+            n &= (n-1) ;
+            count++;
+        }
+        return count;
     }
 }
