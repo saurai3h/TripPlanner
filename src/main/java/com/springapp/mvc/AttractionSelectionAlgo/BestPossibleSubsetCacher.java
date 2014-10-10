@@ -121,7 +121,13 @@ public class BestPossibleSubsetCacher {
         Random rand = new Random();
         int randomAttractionIndex = rand.nextInt(attractionsToVisit.size());
         Attraction lastVisitedAttraction = sortedListOfAttractions.get(randomAttractionIndex);
-        ArrayList<Attraction> orderOfTraversalOfAttractions = TSPSolverForAttractions(attractionsToVisit, lastVisitedAttraction,
+        Attraction westernmostAttraction = null;
+        for (Attraction attraction:attractionsToVisit){
+            if(westernmostAttraction==null||westernmostAttraction.getLongitude()>attraction.getLongitude()){
+                westernmostAttraction=attraction;
+            }
+        }
+        ArrayList<Attraction> orderOfTraversalOfAttractions = TSPSolverForAttractions(attractionsToVisit, westernmostAttraction,
             new DistanceCalculator<Attraction>() {
                 @Override
                 public double getDistance(Attraction src, Attraction dest) {

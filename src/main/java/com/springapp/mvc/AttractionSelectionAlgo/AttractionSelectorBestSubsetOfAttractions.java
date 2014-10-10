@@ -20,14 +20,15 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
         TreeMap<Double,Integer> tripsAtCornersOfStepFunction = SqlQueryExecutor.getDurationBitStringMapForCornerTrips(cityName);
         Double minTravelTimeInHrs = 5.5*noOfDays;
         Double maxTravelTimeInHrs = 12.5*noOfDays;
-        ArrayList<Attraction> sortedListOfAttractions = SqlQueryExecutor.getAllAttractionsForACity(cityName);
+        final ArrayList<Attraction> sortedListOfAttractions = SqlQueryExecutor.getAllAttractionsForACity(cityName);
+        final Double distanceMatrix[][] = getDistanceMatrix(sortedListOfAttractions);
+        DistanceCalculator<Attraction> distanceCalculator = new DistanceCalculator<Attraction>() {
+            @Override
+            public double getDistance(Attraction src, Attraction dest) {
+                return distanceMatrix[sortedListOfAttractions.indexOf(src)][sortedListOfAttractions.indexOf(dest)];
+            }
+        };
         SortedMap<Double, Integer> feasibleTripMap = tripsAtCornersOfStepFunction.subMap(minTravelTimeInHrs, maxTravelTimeInHrs);
-        Double shortestFeasibleTripKey = tripsAtCornersOfStepFunction.floorKey(minTravelTimeInHrs);
-        if(shortestFeasibleTripKey == null){
-            shortestFeasibleTripKey = tripsAtCornersOfStepFunction.firstKey();
-            minTravelTimeInHrs = 0.0;
-        }
-        Double minFeasibleGratificationScore = getGratificationScoreFromBitString(tripsAtCornersOfStepFunction.get(shortestFeasibleTripKey),sortedListOfAttractions);
 
         Collections.sort(sortedListOfAttractions,new Comparator<Attraction>() {
             @Override
@@ -36,23 +37,41 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
             }
         });
         double maxRewardRatio=0;
-        ArrayList<Attraction> mostRewardingAttractionSet = new ArrayList<Attraction>();
-        for(Double feasibleTripDuration:feasibleTripMap.keySet()){
+        ArrayList<List<Attraction>> mostRewardingSchedule = null;
 
-            double extraTimeSpentOverMinTime = feasibleTripDuration - minTravelTimeInHrs;
-            Integer bitString = feasibleTripMap.get(feasibleTripDuration);
-            double additionalGratificationGot = getGratificationScoreFromBitString(bitString,sortedListOfAttractions) - minFeasibleGratificationScore;
-            if(extraTimeSpentOverMinTime == 0){
-                continue;
+
+        for(Double estimatedFeasibleTripDuration:feasibleTripMap.keySet()){
+            System.out.println("generating optimal schedule..");
+            Integer bitString = feasibleTripMap.get(estimatedFeasibleTripDuration);
+            ArrayList<Attraction> listOfAttractionsSelectedInThisSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);
+            ArrayList<List<Attraction>> scheduleForThisTrip = splitSetOfAttractionSetIntoDays(listOfAttractionsSelectedInThisSet, noOfDays);
+            double timeSpent = getTotalTimeSpentInTransitForASchedule(scheduleForThisTrip, distanceCalculator);
+            for (Attraction attraction:listOfAttractionsSelectedInThisSet){
+                timeSpent+= attraction.getVisitTime();
             }
-            double rewardRatio = additionalGratificationGot/extraTimeSpentOverMinTime;
-
+            double gratificationReceived = getGratificationScoreFromBitString(bitString,sortedListOfAttractions);
+            double rewardRatio = gratificationReceived / timeSpent;
             if(rewardRatio>maxRewardRatio){
                 maxRewardRatio = rewardRatio;
-                mostRewardingAttractionSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);
+                mostRewardingSchedule = scheduleForThisTrip;
             }
         }
-        return splitSetOfAttractionSetIntoDays(mostRewardingAttractionSet,noOfDays);
+//        for(Double feasibleTripDuration:feasibleTripMap.keySet()){
+//
+//            double extraTimeSpentOverMinTime = feasibleTripDuration - shortestFeasibleTripKey;
+//            Integer bitString = feasibleTripMap.get(feasibleTripDuration);
+//            double additionalGratificationGot = getGratificationScoreFromBitString(bitString,sortedListOfAttractions) - minFeasibleGratificationScore;
+//            if(extraTimeSpentOverMinTime == 0){
+//                continue;
+//            }
+//            double rewardRatio = additionalGratificationGot/extraTimeSpentOverMinTime;
+//
+//            if(rewardRatio>maxRewardRatio){
+//                maxRewardRatio = rewardRatio;
+//                mostRewardingAttractionSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);
+//            }
+//        }
+        return mostRewardingSchedule;
     }
 
     private ArrayList<List<Attraction>> splitSetOfAttractionSetIntoDays(final ArrayList<Attraction> listOfAttractions, int noOfDays) {
@@ -135,7 +154,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                 schedule.add(orderOfTraversalAfterBasicTSPHeurisic.subList(indexOfFirstAttractionForToday,i+1));
                 indexOfFirstAttractionForToday = i+1;
                 if(noOfDaysRemaining==1){
-                    schedule.add(orderOfTraversalAfterBasicTSPHeurisic.subList(i,orderOfTraversalAfterBasicTSPHeurisic.size()));
+                    schedule.add(orderOfTraversalAfterBasicTSPHeurisic.subList(i+1,orderOfTraversalAfterBasicTSPHeurisic.size()));
                     break;
                 }
             }
@@ -174,7 +193,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
         return distanceMatrix;
     }
 
-    private ArrayList<Integer> apply2optTechniqueForAttractionTSP(Double[][] distanceMatrix, ArrayList<Integer> reorderedAttracionsIndexArray) {
+    public ArrayList<Integer> apply2optTechniqueForAttractionTSP(Double[][] distanceMatrix, ArrayList<Integer> reorderedAttracionsIndexArray) {
         int noOfAttractions;
         int firstEdgeDest=1;
         noOfAttractions = reorderedAttracionsIndexArray.size();
@@ -206,14 +225,6 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
     }
 
 
-    private ArrayList<ArrayList<Attraction>> splitSetOfAttractionSetIntoDays(ArrayList<Attraction> mostRewardingAttractionSet) {
-        ArrayList<Attraction> listOfAttractionsToVisit = new ArrayList<Attraction>(mostRewardingAttractionSet);
-        ArrayList<ArrayList<Attraction>> schedule = new ArrayList<ArrayList<Attraction>>();
-        schedule.add(listOfAttractionsToVisit);
-        return schedule;
-    }
-
-
     public ArrayList<Attraction> getAttractionListFromBitString(Integer bitString, ArrayList<Attraction> sortedListOfAttractions) {
 
         ArrayList<Attraction> subsetOfAttractions = new ArrayList<Attraction>();
@@ -235,5 +246,21 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
         }
         return totalGratificationScore;
     }
+
+    private double getTotalTimeSpentInTransitForASchedule(ArrayList<List<Attraction>> schedule, DistanceCalculator<Attraction> distanceCalculator){
+        double totalTimeSpent = 0.0;
+        for (List<Attraction> scheduleForOneDay:schedule){
+            Attraction prevAttraction = null;
+            for (Attraction curAttraction :scheduleForOneDay){
+                if (prevAttraction!=null){
+                    totalTimeSpent+= distanceCalculator.getDistance(prevAttraction,curAttraction);
+                    prevAttraction = curAttraction;
+                }
+            }
+        }
+        return totalTimeSpent;
+    }
+
+
 
 }

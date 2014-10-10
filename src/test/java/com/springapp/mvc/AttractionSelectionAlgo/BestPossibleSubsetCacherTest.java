@@ -25,7 +25,7 @@ public class BestPossibleSubsetCacherTest {
     @Test
     public void testGetBestTrips() throws Exception {
         for(String cityName: Constants.LIST_OF_CITIES){
-            if(cityName.equals("Bangkok")||cityName.equals("Seoul")||cityName.equals("London"))
+            if(!cityName.equals("Rome"))
                 continue;
             System.out.println("caching "+cityName);
             new BestPossibleSubsetCacher(cityName,new GratificationScoreCalculatorSimple()).tripsSortedByTimeTakenAsc();

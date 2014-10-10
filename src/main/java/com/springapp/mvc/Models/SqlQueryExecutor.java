@@ -145,7 +145,7 @@ public class SqlQueryExecutor {
 
         try {
             PreparedStatement addToCache=connection.prepareStatement(
-                    "INSERT INTO besttripsstepfunctioncornercache (CityID, TripDuration, AttractionsBitString) VALUES (?,?,?);");
+                    "INSERT INTO besttripsstepfunctioncornercachenew (CityID, TripDuration, AttractionsBitString) VALUES (?,?,?);");
             addToCache.setInt(1,getCityIdByName(cityName));
             addToCache.setDouble(2,trip.getTimeRequired());
             addToCache.setInt(3,trip.getAttractionsVisitedBitArray());
