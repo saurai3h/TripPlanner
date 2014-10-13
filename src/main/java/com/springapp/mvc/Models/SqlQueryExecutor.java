@@ -18,6 +18,13 @@ public class SqlQueryExecutor {
 
     static final String USER = "root";
     static final String PASS = "password";
+    public static final String TRIPPLANNER_ATTRACTION_MAPPING = "tripplanner.attractionmapping";
+    private static final String BEST_TRIPS_STEP_FUNCTION_CORNER_CACHE = "besttripsstepfunctioncornercache";
+    private static final String TRIPPLANNER_ATTRACTION_DETAIL = "tripplanner.attractiondetail";
+    private static final String TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING = "tripplanner.attractioncategorymapping";
+    private static final String DISTANCE_BETWEEN_ATTRACTIONS = "distancebetweenattractions";
+    private static final String CITY_MAPPING = "citymapping";
+
     public static Connection getConnection(){
         try {
             Class.forName(JDBC_DRIVER);
@@ -35,7 +42,7 @@ public class SqlQueryExecutor {
         Connection connection = getConnection();
 
         PreparedStatement findDistanceStatement=connection.prepareStatement(
-                "SELECT distance FROM distancebetweenattractions WHERE attractionIDFirst = ? AND attractionIDSecond = ?");
+                "SELECT distance FROM " + DISTANCE_BETWEEN_ATTRACTIONS + " WHERE attractionIDFirst = ? AND attractionIDSecond = ?");
         findDistanceStatement.setInt(1, firstID);
         findDistanceStatement.setInt(2, secondID);
         ResultSet distanceSet = findDistanceStatement.executeQuery();
@@ -51,7 +58,7 @@ public class SqlQueryExecutor {
     public static int getCityIdByName(String cityName) throws SQLException {
         Connection connection = getConnection();
         PreparedStatement selectCityIdStatement=connection.prepareStatement(
-                "SELECT cityID FROM citymapping WHERE cityName = ?");
+                "SELECT cityID FROM " + CITY_MAPPING + " WHERE cityName = ?");
         selectCityIdStatement.setString(1,cityName);
         ResultSet cityIdSet = selectCityIdStatement.executeQuery();
         int cityID = -1;
@@ -66,7 +73,8 @@ public class SqlQueryExecutor {
     public static int getAttractionIdByName(String attractionName) throws SQLException {
         Connection connection = getConnection();
         PreparedStatement selectAttractionIdStatement=connection.prepareStatement(
-                "SELECT attractionID FROM attractionmapping WHERE attractionName = ?");
+                "SELECT attractionID FROM " + TRIPPLANNER_ATTRACTION_MAPPING+
+                        " WHERE attractionName = ?");
         selectAttractionIdStatement.setString(1, attractionName);
         ResultSet attractionIdSet = selectAttractionIdStatement.executeQuery();
         int attractionID = -1;
@@ -90,18 +98,20 @@ public class SqlQueryExecutor {
 
                 PreparedStatement findAttractionsStatement;
                 findAttractionsStatement = conn.prepareStatement(
-                        "SELECT tripplanner.attractioncategorymapping.category, tripplanner.attractionmapping.attractionName,tripplanner.attractionmapping.attractionID," +
-                                "  tripplanner.attractiondetail.noOfReviews, tripplanner.attractiondetail.noOfStars," +
-                                "  tripplanner.attractiondetail.attractionReviewURL,tripplanner.attractiondetail.attractionType," +
-                                "  tripplanner.attractiondetail.attractionFee,tripplanner.attractiondetail.attractionVisitTime," +
-                                "  tripplanner.attractiondetail.attractionDescription,tripplanner.attractiondetail.attractionLongitude," +
-                                "  tripplanner.attractiondetail.attractionLatitude,tripplanner.attractiondetail.attractionImageURL," +
-                                "  tripplanner.attractiondetail.additionalInformation,tripplanner.attractiondetail.activities FROM " +
-                                "tripplanner.attractionmapping INNER JOIN tripplanner.attractiondetail " +
-                                "ON tripplanner.attractionmapping.attractionID = " +
-                                "tripplanner.attractiondetail.attractionID INNER JOIN tripplanner.attractioncategorymapping " +
-                                "ON tripplanner.attractionmapping.attractionID = tripplanner.attractioncategorymapping.attractionID " +
-                                "WHERE tripplanner.attractionmapping.cityID = ?;");
+                        "SELECT " + TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING + ".category, " + TRIPPLANNER_ATTRACTION_MAPPING + ".attractionName," +
+                                TRIPPLANNER_ATTRACTION_MAPPING +
+                                ".attractionID," +
+                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".noOfReviews, " + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".noOfStars," +
+                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionReviewURL," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionType," +
+                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionFee," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionVisitTime," +
+                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionDescription," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionLongitude," +
+                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionLatitude," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionImageURL," +
+                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".additionalInformation," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".activities FROM " +
+                                TRIPPLANNER_ATTRACTION_MAPPING + " INNER JOIN " + TRIPPLANNER_ATTRACTION_DETAIL + " " +
+                                "ON " + TRIPPLANNER_ATTRACTION_MAPPING + ".attractionID = " +
+                                TRIPPLANNER_ATTRACTION_DETAIL + ".attractionID INNER JOIN " + TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING + " " +
+                                "ON " + TRIPPLANNER_ATTRACTION_MAPPING + ".attractionID = " + TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING + ".attractionID " +
+                                "WHERE " + TRIPPLANNER_ATTRACTION_MAPPING + ".cityID = ?;");
                 findAttractionsStatement.setInt(1, cityID);
 
                 ResultSet resultSet = findAttractionsStatement.executeQuery();
@@ -145,7 +155,7 @@ public class SqlQueryExecutor {
 
         try {
             PreparedStatement addToCache=connection.prepareStatement(
-                    "INSERT INTO besttripsstepfunctioncornercache (CityID, TripDuration, AttractionsBitString) VALUES (?,?,?);");
+                    "INSERT INTO " + BEST_TRIPS_STEP_FUNCTION_CORNER_CACHE + " (CityID, TripDuration, AttractionsBitString) VALUES (?,?,?);");
             addToCache.setInt(1,getCityIdByName(cityName));
             addToCache.setDouble(2,trip.getTimeRequired());
             addToCache.setInt(3,trip.getAttractionsVisitedBitArray());
@@ -164,7 +174,7 @@ public class SqlQueryExecutor {
 
         try {
             PreparedStatement getCornerTrips = connection.prepareStatement(
-                    "SELECT TripDuration, AttractionsBitString FROM  besttripsstepfunctioncornercache WHERE CityID = ?");
+                    "SELECT TripDuration, AttractionsBitString FROM  " + BEST_TRIPS_STEP_FUNCTION_CORNER_CACHE + " WHERE CityID = ?");
             getCornerTrips.setInt(1,getCityIdByName(cityName));
             ResultSet trips = getCornerTrips.executeQuery();
             while (trips.next()){

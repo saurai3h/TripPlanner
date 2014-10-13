@@ -1990,7 +1990,22 @@
       <column name="noOfStars" sqlType="DOUBLE" precision="22" scale="0" nullable="false" jdbcType="8"/>
       <column name="additionalInformation" sqlType="VARCHAR" precision="10000" scale="0" nullable="true" jdbcType="12"/>
       <column name="activities" sqlType="VARCHAR" precision="100" scale="0" nullable="true" jdbcType="12"/>
-      <foreign-key name="attractiondetail_ibfk_1" columns="attractionID" ref-table="attractionmapping" ref-schema="" ref-catalog="tripplanner" ref-columns="attractionID" update-rule="3" delete-rule="3" deferrability="2"/>
+    </table>
+    <table name="attractiondetaillarge" schema="" catalog="tripplanner" type="TABLE">
+      <column name="attractionID" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4"/>
+      <column name="attractionReviewURL" sqlType="VARCHAR" precision="255" scale="0" nullable="true" jdbcType="12"/>
+      <column name="attractionType" sqlType="VARCHAR" precision="50" scale="0" nullable="true" jdbcType="12"/>
+      <column name="attractionFee" sqlType="TINYINT" precision="3" scale="0" nullable="true" jdbcType="-6"/>
+      <column name="attractionVisitTime" sqlType="DOUBLE" precision="22" scale="0" nullable="true" jdbcType="8"/>
+      <column name="attractionDescription" sqlType="VARCHAR" precision="255" scale="0" nullable="true" jdbcType="12"/>
+      <column name="attractionLongitude" sqlType="DOUBLE" precision="22" scale="0" nullable="true" jdbcType="8"/>
+      <column name="attractionLatitude" sqlType="DOUBLE" precision="22" scale="0" nullable="true" jdbcType="8"/>
+      <column name="attractionImageURL" sqlType="VARCHAR" precision="10000" scale="0" nullable="true" jdbcType="12"/>
+      <column name="noOfReviews" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4"/>
+      <column name="noOfStars" sqlType="DOUBLE" precision="22" scale="0" nullable="false" jdbcType="8"/>
+      <column name="additionalInformation" sqlType="VARCHAR" precision="10000" scale="0" nullable="true" jdbcType="12"/>
+      <column name="activities" sqlType="VARCHAR" precision="100" scale="0" nullable="true" jdbcType="12"/>
+      <foreign-key name="attractiondetaillarge_ibfk_1" columns="attractionID" ref-table="attractionmappinglarge" ref-schema="" ref-catalog="tripplanner" ref-columns="attractionID" update-rule="3" delete-rule="3" deferrability="2"/>
       <index name="unique_attractionID" unique="true" columns="attractionID"/>
     </table>
     <table name="attractionmapping" schema="" catalog="tripplanner" type="TABLE">
@@ -1998,8 +2013,14 @@
       <column name="attractionName" sqlType="VARCHAR" precision="255" scale="0" nullable="false" jdbcType="12"/>
       <column name="cityID" sqlType="INT" precision="10" scale="0" nullable="true" jdbcType="4"/>
       <primary-key name="PRIMARY" columns="attractionID"/>
-      <foreign-key name="attractionmapping_ibfk_1" columns="cityID" ref-table="citymapping" ref-schema="" ref-catalog="tripplanner" ref-columns="cityID" update-rule="3" delete-rule="3" deferrability="2"/>
-      <exported-key name="attractiondetail_ibfk_1" table="attractiondetail" schema="" catalog="tripplanner" columns="attractionID"/>
+    </table>
+    <table name="attractionmappinglarge" schema="" catalog="tripplanner" type="TABLE">
+      <column name="attractionID" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4" autoIncrement="true"/>
+      <column name="attractionName" sqlType="VARCHAR" precision="255" scale="0" nullable="false" jdbcType="12"/>
+      <column name="cityID" sqlType="INT" precision="10" scale="0" nullable="true" jdbcType="4"/>
+      <primary-key name="PRIMARY" columns="attractionID"/>
+      <foreign-key name="attractionmappinglarge_ibfk_1" columns="cityID" ref-table="citymapping" ref-schema="" ref-catalog="tripplanner" ref-columns="cityID" update-rule="3" delete-rule="3" deferrability="2"/>
+      <exported-key name="attractiondetaillarge_ibfk_1" table="attractiondetaillarge" schema="" catalog="tripplanner" columns="attractionID"/>
       <exported-key name="fkAttraction1" table="distancebetweenattractions" schema="" catalog="tripplanner" columns="attractionIDFirst"/>
       <exported-key name="fkAttraction2" table="distancebetweenattractions" schema="" catalog="tripplanner" columns="attractionIDSecond"/>
     </table>
@@ -2013,7 +2034,7 @@
       <column name="cityID" sqlType="INT" precision="10" scale="0" nullable="false" jdbcType="4" autoIncrement="true"/>
       <column name="cityName" sqlType="VARCHAR" precision="50" scale="0" nullable="false" jdbcType="12"/>
       <primary-key name="PRIMARY" columns="cityID"/>
-      <exported-key name="attractionmapping_ibfk_1" table="attractionmapping" schema="" catalog="tripplanner" columns="cityID"/>
+      <exported-key name="attractionmappinglarge_ibfk_1" table="attractionmappinglarge" schema="" catalog="tripplanner" columns="cityID"/>
       <exported-key name="distancebetweenattractions_ibfk_1" table="distancebetweenattractions" schema="" catalog="tripplanner" columns="cityID"/>
     </table>
     <table name="distancebetweenattractions" schema="" catalog="tripplanner" type="TABLE">
@@ -2023,8 +2044,8 @@
       <column name="distance" sqlType="DOUBLE" precision="22" scale="0" nullable="false" jdbcType="8"/>
       <primary-key name="PRIMARY" columns="attractionIDFirst,attractionIDSecond"/>
       <foreign-key name="distancebetweenattractions_ibfk_1" columns="cityID" ref-table="citymapping" ref-schema="" ref-catalog="tripplanner" ref-columns="cityID" update-rule="3" delete-rule="3" deferrability="2"/>
-      <foreign-key name="fkAttraction1" columns="attractionIDFirst" ref-table="attractionmapping" ref-schema="" ref-catalog="tripplanner" ref-columns="attractionID" update-rule="3" delete-rule="3" deferrability="2"/>
-      <foreign-key name="fkAttraction2" columns="attractionIDSecond" ref-table="attractionmapping" ref-schema="" ref-catalog="tripplanner" ref-columns="attractionID" update-rule="3" delete-rule="3" deferrability="2"/>
+      <foreign-key name="fkAttraction1" columns="attractionIDFirst" ref-table="attractionmappinglarge" ref-schema="" ref-catalog="tripplanner" ref-columns="attractionID" update-rule="3" delete-rule="3" deferrability="2"/>
+      <foreign-key name="fkAttraction2" columns="attractionIDSecond" ref-table="attractionmappinglarge" ref-schema="" ref-catalog="tripplanner" ref-columns="attractionID" update-rule="3" delete-rule="3" deferrability="2"/>
       <index name="fk_distanceAttractionSecond" unique="false" columns="attractionIDSecond"/>
       <index name="fk_distanceCity" unique="false" columns="cityID"/>
     </table>

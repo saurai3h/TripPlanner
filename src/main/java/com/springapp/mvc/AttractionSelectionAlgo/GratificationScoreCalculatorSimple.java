@@ -8,6 +8,6 @@ import com.springapp.mvc.Models.Attraction;
 public class GratificationScoreCalculatorSimple implements GratificationScoreCalculator {
     @Override
     public double getGratificationScoreForAttraction(Attraction attraction) {
-        return attraction.getNoOfReviews() * attraction.getNoOfStars();
+        return attraction.getNoOfReviews();
     }
 }

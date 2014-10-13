@@ -183,7 +183,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
             });
             List<Attraction> smallestDay = schedule.get(0);
             List<Attraction> secondSmallestDay = schedule.get(1);
-            Collections.shuffle(schedule);
+//            Collections.shuffle(schedule);
             schedule.remove(smallestDay);
             schedule.remove(secondSmallestDay);
             schedule.add(smallestDay);
@@ -245,14 +245,6 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
             firstEdgeDest++;
         }
         return reorderedAttracionsIndexArray;
-    }
-
-
-    private ArrayList<ArrayList<Attraction>> splitSetOfAttractionSetIntoDays(ArrayList<Attraction> mostRewardingAttractionSet) {
-        ArrayList<Attraction> listOfAttractionsToVisit = new ArrayList<Attraction>(mostRewardingAttractionSet);
-        ArrayList<ArrayList<Attraction>> schedule = new ArrayList<ArrayList<Attraction>>();
-        schedule.add(listOfAttractionsToVisit);
-        return schedule;
     }
 
 
