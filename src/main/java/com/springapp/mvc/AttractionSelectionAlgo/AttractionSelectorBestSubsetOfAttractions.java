@@ -51,7 +51,9 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                 continue;
             }
             double rewardRatio = additionalGratificationGot/extraTimeSpentOverMinTime;
-
+            double idealAvgTripDuration = (maxTravelTimeInHrs + minTravelTimeInHrs) / 2;
+            double normalizedTripDurationDeviation = (feasibleTripDuration - idealAvgTripDuration) / (maxTravelTimeInHrs - idealAvgTripDuration);
+            rewardRatio = rewardRatio*(1-normalizedTripDurationDeviation*normalizedTripDurationDeviation);
             if(rewardRatio>maxRewardRatio){
                 maxRewardRatio = rewardRatio;
                 mostRewardingAttractionSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);

@@ -125,7 +125,8 @@ public class Attraction {
     }
 
     public double getVisitTime() {
-        return visitTime;
+        double roundedVisitTime = ((int) (visitTime*4) )/4.0;
+        return roundedVisitTime;
     }
 
     public void setVisitTime(double visitTime) {

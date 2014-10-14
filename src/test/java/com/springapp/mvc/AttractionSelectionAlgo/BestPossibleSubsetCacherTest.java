@@ -27,7 +27,7 @@ public class BestPossibleSubsetCacherTest {
         String[] list_of_cities = Constants.LIST_OF_CITIES;
         for (int i = 0; i < list_of_cities.length; i++) {
             String cityName = list_of_cities[i];
-            if (i<18)
+            if (i<20)
                 continue;
             System.out.println("caching " + cityName);
             new BestPossibleSubsetCacher(cityName, new GratificationScoreCalculatorSimple()).tripsSortedByTimeTakenAsc();

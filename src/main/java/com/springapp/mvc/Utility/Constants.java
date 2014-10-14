@@ -11,12 +11,10 @@ public class Constants {
     public static final  double MIN_AVG_TRAVEL_TIME_PER_DAY = 7.5;
     public static final double MAX_DAY_LENGTH_ABSOLUTE = 12;
     public static final double MIN_DAY_LENGTH_ABSOLUTE = 5;
-    public Double MIN_TIME_SPENT_ON_A_DAY = 7.0;
-    public Double MAX_TIME_SPENT_ON_A_DAY = 12.5;
     public static final String[] LIST_OF_CITIES = {"Bangkok", "Seoul", "London", "Milan", "Paris", "Rome",
             "Singapore", "Shanghai", "New York", "Amsterdam", "Istanbul", "Tokyo",
             "Dubai", "Vienna", "Kuala Lumpur", "Taipei", "Hong Kong", "Riyadh",
-            "Barcelona", "Los Angeles"};
+            "Barcelona", "Los Angeles","Mumbai"};
     public static final int getNoOfAttractions(String cityName){
         if(cityName.equals("Riyadh")){
             return 17;
