@@ -14,7 +14,7 @@ public class Constants {
     public static final String[] LIST_OF_CITIES = {"Bangkok", "Seoul", "London", "Milan", "Paris", "Rome",
             "Singapore", "Shanghai", "New York", "Amsterdam", "Istanbul", "Tokyo",
             "Dubai", "Vienna", "Kuala Lumpur", "Taipei", "Hong Kong", "Riyadh",
-            "Barcelona", "Los Angeles","Mumbai"};
+            "Barcelona", "Los Angeles","Mumbai","Delhi","Rio de Janeiro","Sydney"};
     public static final int getNoOfAttractions(String cityName){
         if(cityName.equals("Riyadh")){
             return 17;
