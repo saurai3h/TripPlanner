@@ -12,6 +12,6 @@ public abstract class AttractionSelector {
         this.gratificationScoreCalculator = gratificationScoreCalculator;
     }
 
-    public abstract ArrayList<java.util.List<Attraction>> selectAttraction(String cityName, int noOfDays);
+    public abstract ArrayList<java.util.List<Attraction>> selectAttraction(String cityName, int noOfDays, int mode);
     protected GratificationScoreCalculator gratificationScoreCalculator;
 }

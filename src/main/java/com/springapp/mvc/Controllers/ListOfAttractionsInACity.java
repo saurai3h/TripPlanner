@@ -24,7 +24,7 @@ public class ListOfAttractionsInACity {
 
     @RequestMapping(value = "/api/attractionsForACity", method = RequestMethod.GET)
     @ResponseBody
-    public String sendAttractions(@RequestParam String city,@RequestParam String days, ModelMap model) throws JSONException{
+    public String sendAttractions(@RequestParam String city,@RequestParam String days,@RequestParam String mode,ModelMap model) throws JSONException{
 
         Integer numberOfDays = Integer.parseInt(days);
 
@@ -34,9 +34,9 @@ public class ListOfAttractionsInACity {
         if(numberOfDays<2){
             attractionSelector = new AttractionSelectorSimple(new GratificationScoreCalculatorSimple());
         }
-        ArrayList<List<Attraction>> listOfSchedules = attractionSelector.selectAttraction(city, numberOfDays);
+        ArrayList<List<Attraction>> listOfSchedules = attractionSelector.selectAttraction(city, numberOfDays, Integer.parseInt(mode));
         if(listOfSchedules==null||listOfSchedules.size()==0){
-            listOfSchedules=new AttractionSelectorSimple(new GratificationScoreCalculatorSimple()).selectAttraction(city,numberOfDays);
+            listOfSchedules=new AttractionSelectorSimple(new GratificationScoreCalculatorSimple()).selectAttraction(city,numberOfDays,Integer.parseInt(mode));
         }
 
         for(List<Attraction> scheduleOfOneDay:listOfSchedules) {
