@@ -25,7 +25,7 @@ public class SqlQueryExecutor {
     private static final String DISTANCE_BETWEEN_ATTRACTIONS = "distancebetweenattractions";
     private static final String CITY_MAPPING = "citymapping";
 
-    public static Connection getConnection(){
+    public static Connection getConnection() {
         try {
             Class.forName(JDBC_DRIVER);
             return DriverManager.getConnection(DB_URL, USER, PASS);
@@ -41,13 +41,13 @@ public class SqlQueryExecutor {
     public static Double getDistanceBetweenAttractions(Integer firstID, Integer secondID) throws SQLException {
         Connection connection = getConnection();
 
-        PreparedStatement findDistanceStatement=connection.prepareStatement(
+        PreparedStatement findDistanceStatement = connection.prepareStatement(
                 "SELECT distance FROM " + DISTANCE_BETWEEN_ATTRACTIONS + " WHERE attractionIDFirst = ? AND attractionIDSecond = ?");
         findDistanceStatement.setInt(1, firstID);
         findDistanceStatement.setInt(2, secondID);
         ResultSet distanceSet = findDistanceStatement.executeQuery();
         Double distance = new Double(0.0);
-        if(distanceSet.next()){
+        if (distanceSet.next()) {
             distance = distanceSet.getDouble("distance");
         }
         findDistanceStatement.close();
@@ -57,12 +57,12 @@ public class SqlQueryExecutor {
 
     public static int getCityIdByName(String cityName) throws SQLException {
         Connection connection = getConnection();
-        PreparedStatement selectCityIdStatement=connection.prepareStatement(
+        PreparedStatement selectCityIdStatement = connection.prepareStatement(
                 "SELECT cityID FROM " + CITY_MAPPING + " WHERE cityName = ?");
-        selectCityIdStatement.setString(1,cityName);
+        selectCityIdStatement.setString(1, cityName);
         ResultSet cityIdSet = selectCityIdStatement.executeQuery();
         int cityID = -1;
-        if(cityIdSet.next()){
+        if (cityIdSet.next()) {
             cityID = cityIdSet.getInt("cityID");
         }
         selectCityIdStatement.close();
@@ -72,13 +72,13 @@ public class SqlQueryExecutor {
 
     public static int getAttractionIdByName(String attractionName) throws SQLException {
         Connection connection = getConnection();
-        PreparedStatement selectAttractionIdStatement=connection.prepareStatement(
-                "SELECT attractionID FROM " + TRIPPLANNER_ATTRACTION_MAPPING+
+        PreparedStatement selectAttractionIdStatement = connection.prepareStatement(
+                "SELECT attractionID FROM " + TRIPPLANNER_ATTRACTION_MAPPING +
                         " WHERE attractionName = ?");
         selectAttractionIdStatement.setString(1, attractionName);
         ResultSet attractionIdSet = selectAttractionIdStatement.executeQuery();
         int attractionID = -1;
-        if(attractionIdSet.next()){
+        if (attractionIdSet.next()) {
             attractionID = attractionIdSet.getInt("attractionID");
         }
         selectAttractionIdStatement.close();
@@ -94,52 +94,52 @@ public class SqlQueryExecutor {
             //ArrayList<Attraction> attractionNames = new ArrayList<Attraction>();
             ArrayList<Attraction> attractionList = new ArrayList<Attraction>();
 
-                Connection conn = getConnection();
+            Connection conn = getConnection();
 
-                PreparedStatement findAttractionsStatement;
-                findAttractionsStatement = conn.prepareStatement(
-                        "SELECT " + TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING + ".category, " + TRIPPLANNER_ATTRACTION_MAPPING + ".attractionName," +
-                                TRIPPLANNER_ATTRACTION_MAPPING +
-                                ".attractionID," +
-                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".noOfReviews, " + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".noOfStars," +
-                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionReviewURL," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionType," +
-                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionFee," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionVisitTime," +
-                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionDescription," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionLongitude," +
-                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionLatitude," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionImageURL," +
-                                "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".additionalInformation," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".activities FROM " +
-                                TRIPPLANNER_ATTRACTION_MAPPING + " INNER JOIN " + TRIPPLANNER_ATTRACTION_DETAIL + " " +
-                                "ON " + TRIPPLANNER_ATTRACTION_MAPPING + ".attractionID = " +
-                                TRIPPLANNER_ATTRACTION_DETAIL + ".attractionID INNER JOIN " + TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING + " " +
-                                "ON " + TRIPPLANNER_ATTRACTION_MAPPING + ".attractionID = " + TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING + ".attractionID " +
-                                "WHERE " + TRIPPLANNER_ATTRACTION_MAPPING + ".cityID = ?;");
-                findAttractionsStatement.setInt(1, cityID);
+            PreparedStatement findAttractionsStatement;
+            findAttractionsStatement = conn.prepareStatement(
+                    "SELECT " + TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING + ".category, " + TRIPPLANNER_ATTRACTION_MAPPING + ".attractionName," +
+                            TRIPPLANNER_ATTRACTION_MAPPING +
+                            ".attractionID," +
+                            "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".noOfReviews, " + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".noOfStars," +
+                            "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionReviewURL," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionType," +
+                            "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionFee," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionVisitTime," +
+                            "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionDescription," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionLongitude," +
+                            "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".attractionLatitude," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".attractionImageURL," +
+                            "  " + TRIPPLANNER_ATTRACTION_DETAIL + ".additionalInformation," + SqlQueryExecutor.TRIPPLANNER_ATTRACTION_DETAIL + ".activities FROM " +
+                            TRIPPLANNER_ATTRACTION_MAPPING + " INNER JOIN " + TRIPPLANNER_ATTRACTION_DETAIL + " " +
+                            "ON " + TRIPPLANNER_ATTRACTION_MAPPING + ".attractionID = " +
+                            TRIPPLANNER_ATTRACTION_DETAIL + ".attractionID INNER JOIN " + TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING + " " +
+                            "ON " + TRIPPLANNER_ATTRACTION_MAPPING + ".attractionID = " + TRIPPLANNER_ATTRACTION_CATEGORY_MAPPING + ".attractionID " +
+                            "WHERE " + TRIPPLANNER_ATTRACTION_MAPPING + ".cityID = ?;");
+            findAttractionsStatement.setInt(1, cityID);
 
-                ResultSet resultSet = findAttractionsStatement.executeQuery();
+            ResultSet resultSet = findAttractionsStatement.executeQuery();
 
-                while(resultSet.next()) {
+            while (resultSet.next()) {
 
-                    Attraction attraction = new Attraction();
-                    attraction.setCategory(resultSet.getString("category"));
-                    attraction.setName(resultSet.getString("attractionName"));
-                    attraction.setAttractionID(resultSet.getInt("attractionID"));
-                    attraction.setNoOfReviews(resultSet.getInt("noOfReviews"));
-                    attraction.setNoOfStars(resultSet.getDouble("noOfStars"));
-                    attraction.setReviewURL(resultSet.getString("attractionReviewURL"));
-                    attraction.setType(resultSet.getString("attractionType"));
-                    attraction.setFee(resultSet.getBoolean("attractionFee"));
-                    attraction.setVisitTime(resultSet.getDouble("attractionVisitTime"));
-                    attraction.setDescription(resultSet.getString("attractionDescription"));
-                    attraction.setLongitude(resultSet.getDouble("attractionLongitude"));
-                    attraction.setLatitude(resultSet.getDouble("attractionLatitude"));
-                    attraction.setImageURL(resultSet.getString("attractionImageURL"));
-                    attraction.setAdditionalInformation(resultSet.getString("additionalInformation"));
-                    attraction.setActivities(resultSet.getString("activities"));
-                    attraction.setCityName(city);
-                    attractionList.add(attraction);
-                }
+                Attraction attraction = new Attraction();
+                attraction.setCategory(resultSet.getString("category"));
+                attraction.setName(resultSet.getString("attractionName"));
+                attraction.setAttractionID(resultSet.getInt("attractionID"));
+                attraction.setNoOfReviews(resultSet.getInt("noOfReviews"));
+                attraction.setNoOfStars(resultSet.getDouble("noOfStars"));
+                attraction.setReviewURL(resultSet.getString("attractionReviewURL"));
+                attraction.setType(resultSet.getString("attractionType"));
+                attraction.setFee(resultSet.getBoolean("attractionFee"));
+                attraction.setVisitTime(resultSet.getDouble("attractionVisitTime"));
+                attraction.setDescription(resultSet.getString("attractionDescription"));
+                attraction.setLongitude(resultSet.getDouble("attractionLongitude"));
+                attraction.setLatitude(resultSet.getDouble("attractionLatitude"));
+                attraction.setImageURL(resultSet.getString("attractionImageURL"));
+                attraction.setAdditionalInformation(resultSet.getString("additionalInformation"));
+                attraction.setActivities(resultSet.getString("activities"));
+                attraction.setCityName(city);
+                attractionList.add(attraction);
+            }
 
-                conn.close();
-                findAttractionsStatement.close();
+            conn.close();
+            findAttractionsStatement.close();
 
 
             return attractionList;
@@ -150,15 +150,15 @@ public class SqlQueryExecutor {
         }
     }
 
-    public static void storeTripStepFunctionCornerInCache(String cityName,Trip trip){
+    public static void storeTripStepFunctionCornerInCache(String cityName, Trip trip) {
         Connection connection = getConnection();
 
         try {
-            PreparedStatement addToCache=connection.prepareStatement(
+            PreparedStatement addToCache = connection.prepareStatement(
                     "INSERT INTO " + BEST_TRIPS_STEP_FUNCTION_CORNER_CACHE + " (CityID, TripDuration, AttractionsBitString) VALUES (?,?,?);");
-            addToCache.setInt(1,getCityIdByName(cityName));
-            addToCache.setDouble(2,trip.getTimeRequired());
-            addToCache.setInt(3,trip.getAttractionsVisitedBitArray());
+            addToCache.setInt(1, getCityIdByName(cityName));
+            addToCache.setDouble(2, trip.getTimeRequired());
+            addToCache.setInt(3, trip.getAttractionsVisitedBitArray());
             addToCache.execute();
             addToCache.close();
             connection.close();
@@ -168,23 +168,49 @@ public class SqlQueryExecutor {
 
     }
 
-    public static TreeMap<Double,Integer> getDurationBitStringMapForCornerTrips(String cityName){
-        TreeMap<Double,Integer> durationBitStringMap = new TreeMap<Double, Integer>();
+    public static TreeMap<Double, Integer> getDurationBitStringMapForCornerTrips(String cityName) {
+        TreeMap<Double, Integer> durationBitStringMap = new TreeMap<Double, Integer>();
         Connection connection = getConnection();
 
         try {
             PreparedStatement getCornerTrips = connection.prepareStatement(
                     "SELECT TripDuration, AttractionsBitString FROM  " + BEST_TRIPS_STEP_FUNCTION_CORNER_CACHE + " WHERE CityID = ?");
-            getCornerTrips.setInt(1,getCityIdByName(cityName));
+            getCornerTrips.setInt(1, getCityIdByName(cityName));
             ResultSet trips = getCornerTrips.executeQuery();
-            while (trips.next()){
+            while (trips.next()) {
                 Integer tripBitString = trips.getInt("AttractionsBitString");
-                Double tripDuration= trips.getDouble("TripDuration");
-                durationBitStringMap.put(tripDuration,tripBitString);
+                Double tripDuration = trips.getDouble("TripDuration");
+                durationBitStringMap.put(tripDuration, tripBitString);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    return durationBitStringMap;
+        return durationBitStringMap;
+    }
+
+    public static Double[][] getDistanceMatrix(String cityName, int noOfAttractions) {
+        Double[][] distanceMatrix = new Double[noOfAttractions][noOfAttractions];
+        Connection connection = getConnection();
+        try {
+            PreparedStatement getAllDistancesStatement = connection.prepareStatement("SELECT *" +
+                    "FROM distancebetweenattractions WHERE cityID=? " +
+                    "AND attractionIDFirst<attractionIDSecond");
+            getAllDistancesStatement.setInt(1, getCityIdByName(cityName));
+            ResultSet resultSet = getAllDistancesStatement.executeQuery();
+            while (resultSet.next()) {
+                int firstAttraction = resultSet.getInt("attractionIDFirst");
+                int secondAttraction = resultSet.getInt("attractionIDSecond");
+                double distance = resultSet.getDouble("distance");
+                distanceMatrix[firstAttraction][secondAttraction] = distance;
+                distanceMatrix[secondAttraction][firstAttraction] = distance;
+            }
+            for (int attractionNo = 0; attractionNo < noOfAttractions; attractionNo++) {
+                distanceMatrix[attractionNo][attractionNo] = 0.0;
+            }
+            return distanceMatrix;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

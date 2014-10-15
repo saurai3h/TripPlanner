@@ -132,13 +132,13 @@ public class BestPossibleSubsetCacher {
                 westernmostAttraction=attraction;
             }
         }
-        ArrayList<Attraction> orderOfTraversalOfAttractions = TSPSolverForAttractions(attractionsToVisit, westernmostAttraction,
-            new DistanceCalculator<Attraction>() {
-                @Override
-                public double getDistance(Attraction src, Attraction dest) {
-                    return distanceMatrix[sortedListOfAttractions.indexOf(src)][sortedListOfAttractions.indexOf(dest)];
-                }
-        });
+        ArrayList<Attraction> orderOfTraversalOfAttractions = TSPSolverHeuristics.TSPSolverForAttractions(attractionsToVisit, westernmostAttraction,
+                new DistanceCalculator<Attraction>() {
+                    @Override
+                    public double getDistance(Attraction src, Attraction dest) {
+                        return distanceMatrix[sortedListOfAttractions.indexOf(src)][sortedListOfAttractions.indexOf(dest)];
+                    }
+                });
         Double timeSpentInTravelling = 0.0;
         Attraction previousAttraction = null;
         for(Attraction attraction:orderOfTraversalOfAttractions){
@@ -150,46 +150,6 @@ public class BestPossibleSubsetCacher {
 
         }
         return timeSpentInTravelling;
-    }
-
-    public static ArrayList<Attraction> TSPSolverForAttractions(Collection<Attraction> attractionsToVisit, Attraction lastVisitedAttraction, DistanceCalculator<Attraction> distanceCalculator) {
-        ArrayList<Attraction> listOfUnvisitedAttractions
-                = new ArrayList<Attraction>(attractionsToVisit);
-        ArrayList<Attraction> orderOfTraversal = new ArrayList<Attraction>();
-        orderOfTraversal.add(lastVisitedAttraction);
-        listOfUnvisitedAttractions.remove(lastVisitedAttraction);
-        while (!listOfUnvisitedAttractions.isEmpty()) {
-            double distanceFromClosestAttractionSeenSoFar = -1;
-            Attraction closestAttraction = null;
-            for (Attraction attraction:listOfUnvisitedAttractions){
-                if(attraction.equals(lastVisitedAttraction)){
-                    continue;
-                }
-                else {
-                    if(distanceFromClosestAttractionSeenSoFar==-1){
-                        distanceFromClosestAttractionSeenSoFar = distanceCalculator.getDistance(lastVisitedAttraction,attraction);
-
-                        closestAttraction = attraction;
-                    }
-                    else {
-                       double distanceFromSrc = distanceFromClosestAttractionSeenSoFar = distanceCalculator.getDistance(lastVisitedAttraction, attraction);
-                        if(distanceFromClosestAttractionSeenSoFar>distanceFromSrc){
-                            distanceFromClosestAttractionSeenSoFar = distanceFromSrc;
-                            closestAttraction = attraction;
-                        }
-                    }
-                }
-            }
-            if(closestAttraction!=null) {
-                lastVisitedAttraction = closestAttraction;
-                orderOfTraversal.add(closestAttraction);
-//                System.out.print("'"+Double.toString(closestAttraction.getLatitude())+","+Double.toString(closestAttraction.getLongitude()));
-
-
-            }
-            listOfUnvisitedAttractions.remove(lastVisitedAttraction);
-        }
-        return orderOfTraversal;
     }
 
     double getDistance(int srcAttrattionIndex, int destAttractionIndex) {

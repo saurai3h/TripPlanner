@@ -3,9 +3,12 @@ package com.springapp.mvc.AttractionSelectionAlgo;
 import com.springapp.mvc.Models.Attraction;
 import com.springapp.mvc.Models.SqlQueryExecutor;
 import com.springapp.mvc.Utility.Constants;
+import org.junit.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeMap;
 
@@ -24,14 +27,14 @@ public class BestPossibleSubsetCacherTest {
 
     @Test
     public void testGetBestTrips() throws Exception {
-        String[] list_of_cities = Constants.LIST_OF_CITIES;
-        for (int i = 0; i < list_of_cities.length; i++) {
-            String cityName = list_of_cities[i];
-            if (!cityName.equals("Sydney"))
-                continue;
-            System.out.println("caching " + cityName);
-            new BestPossibleSubsetCacher(cityName, new GratificationScoreCalculatorSimple()).tripsSortedByTimeTakenAsc();
-        }
+//        String[] list_of_cities = Constants.LIST_OF_CITIES;
+//        for (int i = 0; i < list_of_cities.length; i++) {
+//            String cityName = list_of_cities[i];
+//            if (!cityName.equals("Rio de Janeiro"))
+//                continue;
+//            System.out.println("caching " + cityName);
+//            new BestPossibleSubsetCacher(cityName, new GratificationScoreCalculatorSimple()).tripsSortedByTimeTakenAsc();
+//        }
 
     }
 
@@ -52,4 +55,24 @@ public class BestPossibleSubsetCacherTest {
     public void testAddToCache(){
         SqlQueryExecutor.storeTripStepFunctionCornerInCache("Istanbul",new Trip(1022,1000,48));
     }
+
+    @Test
+    public void shouldFindTimeSpentOnADayCorrectly(){
+        AttractionSelectorBestSubsetOfAttractions attractionSelector = new AttractionSelectorBestSubsetOfAttractions(new GratificationScoreCalculatorSimple());
+        ArrayList<Attraction> attractionArrayList = new ArrayList<Attraction>();
+        for (int i = 0; i < 4; i++) {
+            Attraction a=new Attraction();
+            a.setVisitTime(50*i);
+            attractionArrayList.add(a);
+        }
+        Double totalTimeSpentOnADay = attractionSelector.getTotalTimeSpentOnADay(
+                new DistanceCalculator<Attraction>() {
+                    @Override
+                    public double getDistance(Attraction src, Attraction dest) {
+                        return 10;
+                    }
+                }, attractionArrayList);
+        Assert.assertTrue("visitTime Good",totalTimeSpentOnADay==330);
+    }
+
 }
