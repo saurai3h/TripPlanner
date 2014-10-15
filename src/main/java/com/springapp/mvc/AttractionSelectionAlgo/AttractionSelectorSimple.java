@@ -17,7 +17,7 @@ public class AttractionSelectorSimple extends AttractionSelector {
     }
 
     @Override
-    public ArrayList<java.util.List<Attraction>> selectAttraction(String cityName, int noOfDays) {
+    public ArrayList<java.util.List<Attraction>> selectAttraction(String cityName, int noOfDays, int mode) {
         int noOfAttractionsPerDay = 4;
         ArrayList<Attraction> listOfAllAttractions = SqlQueryExecutor.getAllAttractionsForACity(cityName);
 

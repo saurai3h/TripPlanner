@@ -17,14 +17,16 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
     }
 
     @Override
-    public ArrayList<List<Attraction>> selectAttraction(String cityName, int noOfDays) {
+    public ArrayList<List<Attraction>> selectAttraction(String cityName, int noOfDays, int mode) {
         TreeMap<Double,Integer> tripsAtCornersOfStepFunction = SqlQueryExecutor.getDurationBitStringMapForCornerTrips(cityName);
-        return getBestScheduleFromBitStringMap(cityName, noOfDays, tripsAtCornersOfStepFunction);
+        return getBestScheduleFromBitStringMap(cityName, noOfDays, mode, tripsAtCornersOfStepFunction);
     }
 
-    public ArrayList<List<Attraction>> getBestScheduleFromBitStringMap(String cityName, int noOfDays, TreeMap<Double, Integer> tripsAtCornersOfStepFunction) {
-        Double minTravelTimeInHrs = Constants.MIN_AVG_TRAVEL_TIME_PER_DAY*noOfDays;
-        Double maxTravelTimeInHrs = Constants.MAX_AVG_TRAVEL_TIME_PER_DAY *noOfDays;
+    public ArrayList<List<Attraction>> getBestScheduleFromBitStringMap(String cityName, int noOfDays, int mode, TreeMap<Double, Integer> tripsAtCornersOfStepFunction) {
+
+
+        Double minTravelTimeInHrs = Constants.getMIN_AVG_TRAVEL_TIME_PER_DAY(mode) *noOfDays;
+        Double maxTravelTimeInHrs = Constants.getMAX_AVG_TRAVEL_TIME_PER_DAY(mode) *noOfDays;
         ArrayList<Attraction> sortedListOfAttractions = SqlQueryExecutor.getAllAttractionsForACity(cityName);
         SortedMap<Double, Integer> feasibleTripMap = tripsAtCornersOfStepFunction.subMap(minTravelTimeInHrs, maxTravelTimeInHrs);
         Double shortestFeasibleTripKey = tripsAtCornersOfStepFunction.floorKey(minTravelTimeInHrs);
@@ -59,11 +61,11 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                 mostRewardingAttractionSet = getAttractionListFromBitString(bitString, sortedListOfAttractions);
             }
         }
-        ArrayList<List<Attraction>> basicSchedule = splitSetOfAttractionSetIntoDays(mostRewardingAttractionSet, noOfDays);
+        ArrayList<List<Attraction>> basicSchedule = splitSetOfAttractionSetIntoDays(mostRewardingAttractionSet, noOfDays, mode);
         return basicSchedule;
     }
 
-    private ArrayList<List<Attraction>> splitSetOfAttractionSetIntoDays(final ArrayList<Attraction> listOfAttractions, int noOfDays) {
+    private ArrayList<List<Attraction>> splitSetOfAttractionSetIntoDays(final ArrayList<Attraction> listOfAttractions, int noOfDays, int mode) {
         ArrayList<List<Attraction>> schedule = new ArrayList<List<Attraction>>();
 
 
@@ -116,7 +118,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
             timeSpentSoFarToday += attraction.getVisitTime();
 
             if (timeSpentSoFarToday > avgTimeNeededToSpendEveryRemainingDay- Constants.MAX_LOWER_MARGIN_FOR_DAY_LENGTH_ADVANCED_ATTRACTION_SELECTOR
-                    && timeSpentSoFarToday>Constants.MIN_DAY_LENGTH_ABSOLUTE){
+                    && timeSpentSoFarToday> Constants.getMIN_DAY_LENGTH_ABSOLUTE(mode)){
                 //need to look ahead and find the best point to segment this day
                 Attraction curAttraction = orderOfTraversalAfterBasicTSPHeurisic.get(i);
                 Attraction nextAttraction = orderOfTraversalAfterBasicTSPHeurisic.get(i + 1);
@@ -124,7 +126,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                 int lastAttractionForBestSegmentSeenSoFar = i;
                 double timeSpentAfterBestSegmentSoFar = timeSpentSoFarToday;
                 while (timeSpentSoFarToday<avgTimeNeededToSpendEveryRemainingDay+Constants.MAX_HIGHER_MARGIN_FOR_DAY_LENGTH_ADVANCED_ATTRACTION_SELECTOR
-                        &&timeSpentAfterBestSegmentSoFar<Constants.MAX_DAY_LENGTH_ABSOLUTE){
+                        &&timeSpentAfterBestSegmentSoFar< Constants.getMAX_DAY_LENGTH_ABSOLUTE(mode)){
 
                     if (distanceMatrix[listOfAttractions.indexOf(curAttraction)][listOfAttractions.indexOf(nextAttraction)]>largestDistanceSeenSoFar){
                         largestDistanceSeenSoFar = distanceMatrix[listOfAttractions.indexOf(curAttraction)][listOfAttractions.indexOf(nextAttraction)];

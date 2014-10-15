@@ -7,10 +7,13 @@ public class Constants {
     public static final String SQL_DB_HOST = "172.16.152.143";
     public static final Double MAX_LOWER_MARGIN_FOR_DAY_LENGTH_ADVANCED_ATTRACTION_SELECTOR = 2.25;
     public static final Double MAX_HIGHER_MARGIN_FOR_DAY_LENGTH_ADVANCED_ATTRACTION_SELECTOR = 2.25;
-    public static final  double MAX_AVG_TRAVEL_TIME_PER_DAY = 10.5;
-    public static final  double MIN_AVG_TRAVEL_TIME_PER_DAY = 7.5;
-    public static final double MAX_DAY_LENGTH_ABSOLUTE = 12;
-    public static final double MIN_DAY_LENGTH_ABSOLUTE = 5;
+
+    private static final double deltaValue = 1.5;
+    private static final double MAX_AVG_TRAVEL_TIME_PER_DAY = 10.5;
+    private static final double MIN_AVG_TRAVEL_TIME_PER_DAY = 7.5;
+    private static final double MAX_DAY_LENGTH_ABSOLUTE = 12;
+    private static final double MIN_DAY_LENGTH_ABSOLUTE = 5;
+
     public static final String[] LIST_OF_CITIES = {"Bangkok", "Seoul", "London", "Milan", "Paris", "Rome",
             "Singapore", "Shanghai", "New York", "Amsterdam", "Istanbul", "Tokyo",
             "Dubai", "Vienna", "Kuala Lumpur", "Taipei", "Hong Kong", "Riyadh",
@@ -22,5 +25,21 @@ public class Constants {
         else {
             return 30;
         }
+    }
+
+    public static double getMAX_AVG_TRAVEL_TIME_PER_DAY(int mode) {
+        return MAX_AVG_TRAVEL_TIME_PER_DAY + (mode-2)*deltaValue;
+    }
+
+    public static double getMIN_AVG_TRAVEL_TIME_PER_DAY(int mode) {
+        return MIN_AVG_TRAVEL_TIME_PER_DAY + (mode-2)*deltaValue;
+    }
+
+    public static double getMAX_DAY_LENGTH_ABSOLUTE(int mode) {
+        return MAX_DAY_LENGTH_ABSOLUTE + (mode-2)*deltaValue;
+    }
+
+    public static double getMIN_DAY_LENGTH_ABSOLUTE(int mode) {
+        return MIN_DAY_LENGTH_ABSOLUTE + (mode-2)*deltaValue;
     }
 }
