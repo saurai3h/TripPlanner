@@ -3,7 +3,6 @@ package com.springapp.mvc.AttractionSelectionAlgo;
 import com.springapp.mvc.Models.Attraction;
 import com.springapp.mvc.Models.SqlQueryExecutor;
 
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -36,7 +35,7 @@ public class BestPossibleSubsetCacher {
         int stepsizeForDisplay = 1000000;
         for(Integer subsetOfAttractionIndex =15*(int)Math.pow(2, sortedListOfAttractions.size()-4);subsetOfAttractionIndex<Math.pow(2, sortedListOfAttractions.size());subsetOfAttractionIndex+=4){
             if(subsetOfAttractionIndex% stepsizeForDisplay == 0){
-                System.out.println(Integer.toString(subsetOfAttractionIndex / stepsizeForDisplay) + " steps done..(mill) at time "+Long.toString(new Date().getTime()-startTime));
+                System.out.println(Integer.toString(subsetOfAttractionIndex / stepsizeForDisplay) + " steps done..(mill) at time "+Long.toString(new Date().getTime() - startTime));
             }
             Set<Attraction> subsetOfAttractions = getAttractionSetFromBitString(subsetOfAttractionIndex);
             double lengthOfCurrentTrip =getMinTimeRequiredToVisitGivenAttractions(subsetOfAttractions);
@@ -121,9 +120,9 @@ public class BestPossibleSubsetCacher {
             }
         }
 
-        ArrayList<Attraction> orderOfTraversalOfAttractions = TSPSolverHeuristics.TSPSolverForAttractions(attractionsToVisit, westernmostAttraction,
+        ArrayList<Attraction> orderOfTraversalOfAttractions = TSPSolverHeuristicsHelper.TSPSolverForAttractions(attractionsToVisit, westernmostAttraction,
                 distanceCalculator);
-//        ArrayList<Attraction> orderAfter2opt = TSPSolverHeuristics.apply2optHeuristicForTSP(distanceCalculator,orderOfTraversalOfAttractions);
+//        ArrayList<Attraction> orderAfter2opt = TSPSolverHeuristicsHelper.apply2optHeuristicForTSP(distanceCalculator,orderOfTraversalOfAttractions);
         Double timeSpentInTravelling = 0.0;
         Attraction previousAttraction = null;
         for(Attraction attraction:orderOfTraversalOfAttractions){

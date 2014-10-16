@@ -28,9 +28,7 @@ public abstract class AttractionSelector {
             logFileHandler.setFormatter(formatter);
 
         } catch (SecurityException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
     public AttractionSelector(GratificationScoreCalculator gratificationScoreCalculator) {

@@ -7,7 +7,7 @@ import java.util.*;
 /**
  * Created by kartik.k on 10/15/2014.
  */
-public abstract   class TSPSolverHeuristics {
+public abstract   class TSPSolverHeuristicsHelper {
     public static ArrayList<Attraction> apply2optHeuristicForTSP(DistanceCalculator<Attraction> distanceCalculator, ArrayList<Attraction> orderOfTraversalAfterBasicTSPHeurisic) {
         int noOfAttractions;
         int firstEdgeDest=1;
@@ -86,5 +86,60 @@ public abstract   class TSPSolverHeuristics {
             listOfUnvisitedAttractions.remove(lastVisitedAttraction);
         }
         return orderOfTraversal;
+    }
+
+    public static Double getTotalTimeSpentOnADay(DistanceCalculator<Attraction> distanceCalculator, List<Attraction> attractionsForTheDay) {
+        Double totalTimeSpent = 0.0;
+        Attraction prevAttraction = null;
+        for (Attraction curAttraction : attractionsForTheDay){
+            if(prevAttraction!=null){
+                totalTimeSpent += distanceCalculator.getDistance(prevAttraction, curAttraction);
+            }
+            totalTimeSpent+= curAttraction.getVisitTime();
+            prevAttraction= curAttraction;
+        }
+        return totalTimeSpent;
+    }
+
+    public static double getTotalTimeSpentInTransitForASchedule(ArrayList<List<Attraction>> schedule, DistanceCalculator<Attraction> distanceCalculator){
+        double totalTimeSpent = 0.0;
+        for (List<Attraction> scheduleForOneDay:schedule){
+            Attraction prevAttraction = null;
+            for (Attraction curAttraction :scheduleForOneDay){
+                if (prevAttraction!=null){
+                    totalTimeSpent+= distanceCalculator.getDistance(prevAttraction,curAttraction);
+                }
+                prevAttraction = curAttraction;
+            }
+        }
+        return totalTimeSpent;
+    }
+
+    public static Set<Attraction> getExtremeAttraction(ArrayList<Attraction> listOfAttractions) {
+        Attraction westernmostAttraction = null;
+        Attraction easternmostAttraction = null;
+        Attraction northernmostAttraction = null;
+        Attraction southernmostAttraction = null;
+
+        Set<Attraction> extremeAttractions = new HashSet<Attraction>();
+        for (Attraction attraction:listOfAttractions){
+            if(westernmostAttraction==null||westernmostAttraction.getLongitude()>attraction.getLongitude()){
+                westernmostAttraction=attraction;
+            }
+            else if(easternmostAttraction==null||easternmostAttraction.getLongitude()<attraction.getLongitude()){
+                easternmostAttraction=attraction;
+            }
+            if(southernmostAttraction==null||southernmostAttraction.getLatitude()>attraction.getLatitude()){
+                southernmostAttraction=attraction;
+            }
+            else if(northernmostAttraction==null||northernmostAttraction.getLatitude()<attraction.getLatitude()){
+                northernmostAttraction=attraction;
+            }
+        }
+        extremeAttractions.add(westernmostAttraction);
+//        extremeAttractions.add(easternmostAttraction);
+//        extremeAttractions.add(southernmostAttraction);
+//        extremeAttractions.add(northernmostAttraction);
+        return extremeAttractions;
     }
 }

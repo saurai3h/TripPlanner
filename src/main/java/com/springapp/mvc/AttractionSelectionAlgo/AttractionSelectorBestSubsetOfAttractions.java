@@ -86,19 +86,24 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
         final DistanceCalculator<Attraction> distanceCalculator =  SqlQueryExecutor.getDistanceMatrix(cityName);
         log("distance matrix calculation" );
 
-        Attraction westernmostAttraction = null;
-        for (Attraction attraction:listOfAttractions){
-            if(westernmostAttraction==null||westernmostAttraction.getLongitude()>attraction.getLongitude()){
-                westernmostAttraction=attraction;
+        Set<Attraction> extremeAttractions = TSPSolverHeuristicsHelper.getExtremeAttraction(listOfAttractions);
+        Double minTimeInTransit = -1.0;
+        log("preparing tsp solving");
+        for(Attraction extremeAttraction:extremeAttractions) {
+            ArrayList<Attraction> orderOfTraversalAfterBasicTSPHeurisic = TSPSolverHeuristicsHelper.TSPSolverForAttractions(
+                    listOfAttractions, extremeAttraction, distanceCalculator);
+            log("basic tsp");
+            ArrayList<Attraction> orderAfter2opt = TSPSolverHeuristicsHelper.apply2optHeuristicForTSP(distanceCalculator, orderOfTraversalAfterBasicTSPHeurisic);
+            log("2-opt");
+            ArrayList<List<Attraction>> scheduleForThisExtreme = segmentTourOfAttractionsIntoDays(noOfDays, distanceCalculator, orderAfter2opt, mode);
+            Double timeInTransitForThisSchedule = TSPSolverHeuristicsHelper.getTotalTimeSpentInTransitForASchedule(scheduleForThisExtreme, distanceCalculator);
+            if (minTimeInTransit == -1.0 || minTimeInTransit > timeInTransitForThisSchedule) {
+                minTimeInTransit = timeInTransitForThisSchedule;
+                schedule = scheduleForThisExtreme;
             }
         }
-        log("preparing tsp solving");
-        ArrayList<Attraction> orderOfTraversalAfterBasicTSPHeurisic = TSPSolverHeuristics.TSPSolverForAttractions(
-                listOfAttractions, westernmostAttraction, distanceCalculator);
-        log("basic tsp");
-        ArrayList<Attraction> orderAfter2opt = TSPSolverHeuristics.apply2optHeuristicForTSP(distanceCalculator, orderOfTraversalAfterBasicTSPHeurisic);
-        log("2-opt");
-        return segmentTourOfAttractionsIntoDays(noOfDays, distanceCalculator, orderAfter2opt,mode);
+        schedule = minimizeLoadOnFirstAndLastDay(schedule,distanceCalculator);
+        return schedule;
     }
 
     private void log(String actionTaken) {
@@ -110,7 +115,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
     }
 
     private ArrayList<List<Attraction>> segmentTourOfAttractionsIntoDays(int noOfDays, DistanceCalculator<Attraction> distanceCalculator, ArrayList<Attraction> tourOfAttractions,int mode) {
-        Double totalTimeNeededToCompleteTripNonStop = getTotalTimeSpentOnADay(distanceCalculator, tourOfAttractions);
+        Double totalTimeNeededToCompleteTripNonStop = TSPSolverHeuristicsHelper.getTotalTimeSpentOnADay(distanceCalculator, tourOfAttractions);
         Double avgTimeNeededToSpendEveryRemainingDay = totalTimeNeededToCompleteTripNonStop/noOfDays;
 
         ArrayList<List<Attraction>> schedule = new ArrayList<List<Attraction>>();
@@ -136,7 +141,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                     Double distBetweenCurAndNextAttraction = distanceCalculator.getDistance(curAttraction,nextAttraction);
                     double extraTimeSpentToday = timeSpentSoFarToday - totalTimeNeededToCompleteTripNonStop/noOfDays;
                     Double rewardForSegmentingAfterCurAttraction = distBetweenCurAndNextAttraction *
-                            Math.pow(extraTimeSpentToday,2);
+                            Math.pow(extraTimeSpentToday, 2);
                     if (rewardForSegmentingAfterCurAttraction >bestRewardForSegmentingSeenSoFar){
                         bestRewardForSegmentingSeenSoFar = rewardForSegmentingAfterCurAttraction;
                         distanceAfterLastAttractionOfBestSegmentSeenSoFar = distBetweenCurAndNextAttraction;
@@ -146,7 +151,12 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                     i++;
                     timeSpentSoFarToday += distBetweenCurAndNextAttraction;
                     curAttraction = nextAttraction;
-                    nextAttraction = tourOfAttractions.get(i + 1);
+                    if(i+1<tourOfAttractions.size()) {
+                        nextAttraction = tourOfAttractions.get(i + 1);
+                    }
+                    else {
+                        nextAttraction = null;
+                    }
                     timeSpentSoFarToday += curAttraction.getVisitTime();
                 }
                 i=lastAttractionForBestSegmentSeenSoFar;
@@ -172,31 +182,16 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                 }
             }
         }
-        log("segmentation without minimization of first/last day");
-        return minimizeLoadOnFirstAndLastDay(schedule, distanceCalculator);
-    }
-
-    public Double getTotalTimeSpentOnADay(DistanceCalculator<Attraction> distanceCalculator, List<Attraction> attractionsForTheDay) {
-        Double totalTimeSpent = 0.0;
-        Attraction prevAttraction = null;
-        for (Attraction curAttraction : attractionsForTheDay){
-            if(prevAttraction!=null){
-                totalTimeSpent += distanceCalculator.getDistance(prevAttraction, curAttraction);
-            }
-            totalTimeSpent+= curAttraction.getVisitTime();
-            prevAttraction= curAttraction;
-        }
-        return totalTimeSpent;
+        return schedule;
     }
 
     private ArrayList<List<Attraction>> minimizeLoadOnFirstAndLastDay(ArrayList<List<Attraction>> schedule, final DistanceCalculator<Attraction> distanceCalculator) {
-        long startTime = new Date().getTime();
         if(schedule.size()>1) {
             Comparator<List<Attraction>> dayComapratorBasedOnTotalTimeSpent = new Comparator<List<Attraction>>() {
                 @Override
                 public int compare(List<Attraction> o1, List<Attraction> o2) {
-                    double additionalTimeSpentOnDay1wrtDay2 = getTotalTimeSpentOnADay(distanceCalculator, o1) -
-                            getTotalTimeSpentOnADay(distanceCalculator, o2);
+                    double additionalTimeSpentOnDay1wrtDay2 = TSPSolverHeuristicsHelper.getTotalTimeSpentOnADay(distanceCalculator, o1) -
+                            TSPSolverHeuristicsHelper.getTotalTimeSpentOnADay(distanceCalculator, o2);
                     if (additionalTimeSpentOnDay1wrtDay2 > 0) {
                         return 1;
                     } else if (additionalTimeSpentOnDay1wrtDay2 < 0) {
@@ -217,50 +212,6 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
         }
         log("minimization of first/last day");
         return schedule;
-    }
-
-    private DistanceCalculator<Attraction> getDistanceMatrix(ArrayList<Attraction> listOfAttractions, String cityName) {
-
-        int noOfAttractions = listOfAttractions.size();
-        Map<Integer,Integer> mapBetweenIndexInListOfAttractionAndID = new HashMap<Integer,Integer>();
-        for (int i = 0; i < listOfAttractions.size(); i++) {
-            Attraction attraction = listOfAttractions.get(i);
-            mapBetweenIndexInListOfAttractionAndID.put(attraction.getAttractionID(),i);
-        }
-        return SqlQueryExecutor.getDistanceMatrix(cityName);
-    }
-
-    public ArrayList<Integer> apply2optTechniqueForAttractionTSP(Double[][] distanceMatrix, ArrayList<Integer> reorderedAttracionsIndexArray) {
-        int noOfAttractions;
-        int firstEdgeDest=1;
-        noOfAttractions = reorderedAttracionsIndexArray.size();
-        reorderedAttracionsIndexArray.add(reorderedAttracionsIndexArray.get(0));
-        while (firstEdgeDest<noOfAttractions-2){
-            int secondEdgeSrc = firstEdgeDest + 1;
-            while (secondEdgeSrc<noOfAttractions-1){
-
-                double currentEdgePairTotalLength = distanceMatrix[reorderedAttracionsIndexArray.get(firstEdgeDest - 1)][reorderedAttracionsIndexArray.get(firstEdgeDest)]+
-                        distanceMatrix[reorderedAttracionsIndexArray.get(secondEdgeSrc)][reorderedAttracionsIndexArray.get(secondEdgeSrc + 1)];
-                double totalEdgePairLengthAfterSwapping =distanceMatrix[reorderedAttracionsIndexArray.get(firstEdgeDest - 1)][reorderedAttracionsIndexArray.get(secondEdgeSrc)]+
-                        distanceMatrix[reorderedAttracionsIndexArray.get(firstEdgeDest)][reorderedAttracionsIndexArray.get(secondEdgeSrc + 1)];
-                if(totalEdgePairLengthAfterSwapping<currentEdgePairTotalLength){
-                    //swap
-                    ArrayList<Integer> newReorderedAttractionIndexArray = new ArrayList<Integer>();
-                    newReorderedAttractionIndexArray.addAll(reorderedAttracionsIndexArray.subList(0,firstEdgeDest));
-                    List<Integer> subListBetweenTheTwoEdges = reorderedAttracionsIndexArray.subList(firstEdgeDest, secondEdgeSrc + 1);
-                    Collections.reverse(subListBetweenTheTwoEdges);
-                    newReorderedAttractionIndexArray.addAll(subListBetweenTheTwoEdges);
-                    newReorderedAttractionIndexArray.addAll(reorderedAttracionsIndexArray.subList(secondEdgeSrc+1,noOfAttractions));
-                    reorderedAttracionsIndexArray = newReorderedAttractionIndexArray;
-                    secondEdgeSrc = firstEdgeDest+1;
-                }
-                else {
-                    secondEdgeSrc++;
-                }
-            }
-            firstEdgeDest++;
-        }
-        return reorderedAttracionsIndexArray;
     }
 
 
@@ -285,21 +236,6 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
         }
         return totalGratificationScore;
     }
-
-    private double getTotalTimeSpentInTransitForASchedule(ArrayList<List<Attraction>> schedule, DistanceCalculator<Attraction> distanceCalculator){
-        double totalTimeSpent = 0.0;
-        for (List<Attraction> scheduleForOneDay:schedule){
-            Attraction prevAttraction = null;
-            for (Attraction curAttraction :scheduleForOneDay){
-                if (prevAttraction!=null){
-                    totalTimeSpent+= distanceCalculator.getDistance(prevAttraction,curAttraction);
-                    prevAttraction = curAttraction;
-                }
-            }
-        }
-        return totalTimeSpent;
-    }
-
 
 
 }

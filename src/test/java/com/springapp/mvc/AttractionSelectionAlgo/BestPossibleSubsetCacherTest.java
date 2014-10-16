@@ -11,7 +11,6 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.TreeMap;
 
 public class BestPossibleSubsetCacherTest {
     BestPossibleSubsetCacher bestPossibleSubsetCacher;
@@ -61,7 +60,7 @@ public class BestPossibleSubsetCacherTest {
             a.setVisitTime(50*i);
             attractionArrayList.add(a);
         }
-        Double totalTimeSpentOnADay = attractionSelector.getTotalTimeSpentOnADay(
+        Double totalTimeSpentOnADay = TSPSolverHeuristicsHelper.getTotalTimeSpentOnADay(
                 new DistanceCalculator<Attraction>() {
                     @Override
                     public double getDistance(Attraction src, Attraction dest) {
