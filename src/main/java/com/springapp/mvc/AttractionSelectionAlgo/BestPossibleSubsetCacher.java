@@ -13,10 +13,12 @@ public class BestPossibleSubsetCacher {
 
 
     String city;
-    Double distanceMatrix[][];
     Double gratificationScoreArray [];
     private ArrayList<Attraction> sortedListOfAttractions;
     GratificationScoreCalculator scoreCalculator;
+    private DistanceCalculator<Attraction> distanceCalculator;
+    private long startTime;
+
     public TreeMap<Double, Trip> tripsSortedByTimeTakenAsc(){
 
         TreeMap<Double, Trip> tripsStepCorners = getBestSubsetsOfAttractionStepFunction();
@@ -34,7 +36,7 @@ public class BestPossibleSubsetCacher {
         int stepsizeForDisplay = 1000000;
         for(Integer subsetOfAttractionIndex =15*(int)Math.pow(2, sortedListOfAttractions.size()-4);subsetOfAttractionIndex<Math.pow(2, sortedListOfAttractions.size());subsetOfAttractionIndex+=4){
             if(subsetOfAttractionIndex% stepsizeForDisplay == 0){
-                System.out.println(Integer.toString(subsetOfAttractionIndex / stepsizeForDisplay) + " steps done..(mill)");
+                System.out.println(Integer.toString(subsetOfAttractionIndex / stepsizeForDisplay) + " steps done..(mill) at time "+Long.toString(new Date().getTime()-startTime));
             }
             Set<Attraction> subsetOfAttractions = getAttractionSetFromBitString(subsetOfAttractionIndex);
             double lengthOfCurrentTrip =getMinTimeRequiredToVisitGivenAttractions(subsetOfAttractions);
@@ -69,34 +71,20 @@ public class BestPossibleSubsetCacher {
         this.city = city;
         this.scoreCalculator = scoreCalculator;
         sortedListOfAttractions = SqlQueryExecutor.getAllAttractionsForACity(city);
+        gratificationScoreArray =new Double[sortedListOfAttractions.size()];
         Collections.sort(sortedListOfAttractions,new Comparator<Attraction>() {
             @Override
             public int compare(Attraction o1, Attraction o2) {
                 return (int) (scoreCalculator.getGratificationScoreForAttraction(o1) - scoreCalculator.getGratificationScoreForAttraction(o2));
             }
         });
-        distanceMatrix= new Double[sortedListOfAttractions.size()][sortedListOfAttractions.size()];
-        gratificationScoreArray =new Double[sortedListOfAttractions.size()];
-        for (int row = 0;row< sortedListOfAttractions.size();row++){
-            for (int col = 0;col< sortedListOfAttractions.size();col++){
-                if(row==col) {
-                    distanceMatrix[row][col] = Double.valueOf(0);
-                }
-                else {
-                    try {
-                        distanceMatrix[row][col] = SqlQueryExecutor.getDistanceBetweenAttractions(
-                                sortedListOfAttractions.get(row).getAttractionID(), sortedListOfAttractions.get(col).getAttractionID()
-                        );
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+        distanceCalculator = SqlQueryExecutor.getDistanceMatrix(city);
+
 
         for (int attractionNo = 0;attractionNo< sortedListOfAttractions.size();attractionNo++){
             gratificationScoreArray[attractionNo] = scoreCalculator.getGratificationScoreForAttraction(sortedListOfAttractions.get(attractionNo));
         }
+        startTime = new Date().getTime();
     }
 
     public double getGratificationScoreFromBitString(long bitString){
@@ -132,34 +120,20 @@ public class BestPossibleSubsetCacher {
                 westernmostAttraction=attraction;
             }
         }
+
         ArrayList<Attraction> orderOfTraversalOfAttractions = TSPSolverHeuristics.TSPSolverForAttractions(attractionsToVisit, westernmostAttraction,
-                new DistanceCalculator<Attraction>() {
-                    @Override
-                    public double getDistance(Attraction src, Attraction dest) {
-                        return distanceMatrix[sortedListOfAttractions.indexOf(src)][sortedListOfAttractions.indexOf(dest)];
-                    }
-                });
+                distanceCalculator);
+//        ArrayList<Attraction> orderAfter2opt = TSPSolverHeuristics.apply2optHeuristicForTSP(distanceCalculator,orderOfTraversalOfAttractions);
         Double timeSpentInTravelling = 0.0;
         Attraction previousAttraction = null;
         for(Attraction attraction:orderOfTraversalOfAttractions){
             if (previousAttraction != null) {
-                timeSpentInTravelling+=distanceMatrix[sortedListOfAttractions.indexOf(previousAttraction)]
-                        [sortedListOfAttractions.indexOf(attraction)];
+                timeSpentInTravelling+=distanceCalculator.getDistance(attraction,previousAttraction);
             }
             previousAttraction = attraction;
 
         }
         return timeSpentInTravelling;
-    }
-
-    double getDistance(int srcAttrattionIndex, int destAttractionIndex) {
-//        Double latDifference = latSrc-latDest;
-//        Double longDifference = longSrc -longDest;
-//        double a = (Math.sin(latDifference/2))*(Math.sin(latDifference/2)) +
-//                Math.cos(latSrc) * Math.cos(latDest)
-//                * (Math.sin(longDifference/2))*(Math.sin(longDifference/2));
-//        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return distanceMatrix[srcAttrattionIndex][destAttractionIndex];
     }
 
 

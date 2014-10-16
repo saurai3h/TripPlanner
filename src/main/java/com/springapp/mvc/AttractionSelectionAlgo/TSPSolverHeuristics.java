@@ -2,10 +2,7 @@ package com.springapp.mvc.AttractionSelectionAlgo;
 
 import com.springapp.mvc.Models.Attraction;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by kartik.k on 10/15/2014.
@@ -14,12 +11,13 @@ public abstract   class TSPSolverHeuristics {
     public static ArrayList<Attraction> apply2optHeuristicForTSP(DistanceCalculator<Attraction> distanceCalculator, ArrayList<Attraction> orderOfTraversalAfterBasicTSPHeurisic) {
         int noOfAttractions;
         int firstEdgeDest=1;
+        boolean bool=false;
+        long startTime = 0;
         noOfAttractions = orderOfTraversalAfterBasicTSPHeurisic.size();
         orderOfTraversalAfterBasicTSPHeurisic.add(orderOfTraversalAfterBasicTSPHeurisic.get(0));
         while (firstEdgeDest< noOfAttractions -2){
             int secondEdgeSrc = firstEdgeDest + 1;
             while (secondEdgeSrc< noOfAttractions -1){
-
                 double currentEdgePairTotalLength =
                         distanceCalculator.getDistance(orderOfTraversalAfterBasicTSPHeurisic.get(firstEdgeDest-1),
                         orderOfTraversalAfterBasicTSPHeurisic.get(firstEdgeDest)) +

@@ -6,8 +6,7 @@ package com.springapp.mvc.Utility;
 public class Constants {
     public static final String SQL_DB_HOST = "localhost";// 172.16.152.143 Kartik's machine.
 
-    public static final Double MAX_LOWER_MARGIN_FOR_DAY_LENGTH_ADVANCED_ATTRACTION_SELECTOR = 2.25;
-    public static final Double MAX_HIGHER_MARGIN_FOR_DAY_LENGTH_ADVANCED_ATTRACTION_SELECTOR = 2.25;
+    public static final Double MAX_DEVIATION_FROM_AVG_DAY_LENGTH = 2.25;
 
     private static final double deltaValue = 1.5;
     private static final double MAX_AVG_TRAVEL_TIME_PER_DAY = 10.5;

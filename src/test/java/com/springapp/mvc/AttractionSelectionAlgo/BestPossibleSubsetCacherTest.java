@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.TreeMap;
 
@@ -27,22 +28,17 @@ public class BestPossibleSubsetCacherTest {
 
     @Test
     public void testGetBestTrips() throws Exception {
-//        String[] list_of_cities = Constants.LIST_OF_CITIES;
-//        for (int i = 0; i < list_of_cities.length; i++) {
-//            String cityName = list_of_cities[i];
-//            if (!cityName.equals("Rio de Janeiro"))
-//                continue;
-//            System.out.println("caching " + cityName);
-//            new BestPossibleSubsetCacher(cityName, new GratificationScoreCalculatorSimple()).tripsSortedByTimeTakenAsc();
-//        }
+        String[] list_of_cities = Constants.LIST_OF_CITIES;
+        for (int i = 0; i < list_of_cities.length; i++) {
+            String cityName = list_of_cities[i];
+            if (!cityName.equals("Dubai"))
+                continue;
+            System.out.println("caching " + cityName);
+            new BestPossibleSubsetCacher(cityName, new GratificationScoreCalculatorSimple()).tripsSortedByTimeTakenAsc();
+        }
 
     }
 
-    @Test
-    public void testGetDistanceBasedOnLatlong() throws Exception {
-        System.out.println(bestPossibleSubsetCacher.getDistance(1, 2));
-
-    }
 
     @Test
     public void testEstimateTimeForOneSubset() throws Exception{
@@ -73,6 +69,21 @@ public class BestPossibleSubsetCacherTest {
                     }
                 }, attractionArrayList);
         Assert.assertTrue("visitTime Good",totalTimeSpentOnADay==330);
+    }
+
+    @Test
+    public void distanceCalculator(){
+        long startTime = new Date().getTime();
+        DistanceCalculator<Attraction> distanceCalculator =  SqlQueryExecutor.getDistanceMatrix("Mumbai");
+
+
+        ArrayList<Attraction> attractionsInMumbai = SqlQueryExecutor.getAllAttractionsForACity("Mumbai");
+        for(int i = 0;i<30;i++){
+            for(int j=0;j<30;j++){
+                distanceCalculator.getDistance(attractionsInMumbai.get(i),attractionsInMumbai.get(j));
+            }
+        }
+        System.out.println((new Date().getTime() - startTime));
     }
 
 }
