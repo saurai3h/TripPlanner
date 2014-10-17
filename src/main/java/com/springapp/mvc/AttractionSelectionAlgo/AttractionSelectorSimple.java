@@ -63,7 +63,7 @@ public class AttractionSelectorSimple extends AttractionSelector {
             }
             attractionsCoveredSoFar=atttractionsSeenToday;
             Attraction westernmostAttraction = TSPSolverHeuristicsHelper.getExtremeAttraction(scheduleForThisDay);
-//            scheduleForThisDay = TSPSolverHeuristicsHelper.TSPSolverForAttractions(scheduleForThisDay,westernmostAttraction,distanceCalculator);
+            scheduleForThisDay = TSPSolverHeuristicsHelper.TSPSolverForAttractions(scheduleForThisDay,westernmostAttraction,distanceCalculator);
             scheduleForThisDay=TSPSolverHeuristicsHelper.apply2optHeuristicForTSP(distanceCalculator,scheduleForThisDay);
             listOfSchedulesForDays.add(scheduleForThisDay);
         }

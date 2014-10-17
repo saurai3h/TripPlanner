@@ -46,7 +46,9 @@ public abstract   class TSPSolverHeuristicsHelper {
             }
             firstEdgeDest++;
         }
+        Collections.reverse(orderOfTraversalAfterBasicTSPHeurisic);
         orderOfTraversalAfterBasicTSPHeurisic.remove(firstAttractionToBeDuplicated);
+        Collections.reverse(orderOfTraversalAfterBasicTSPHeurisic);
         return orderOfTraversalAfterBasicTSPHeurisic;
     }
 
