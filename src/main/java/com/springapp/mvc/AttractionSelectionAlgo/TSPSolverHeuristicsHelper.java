@@ -14,7 +14,8 @@ public abstract   class TSPSolverHeuristicsHelper {
         boolean bool=false;
         long startTime = 0;
         noOfAttractions = orderOfTraversalAfterBasicTSPHeurisic.size();
-        orderOfTraversalAfterBasicTSPHeurisic.add(orderOfTraversalAfterBasicTSPHeurisic.get(0));
+        Attraction firstAttractionToBeDuplicated = orderOfTraversalAfterBasicTSPHeurisic.get(0);
+        orderOfTraversalAfterBasicTSPHeurisic.add(firstAttractionToBeDuplicated);
         while (firstEdgeDest< noOfAttractions -2){
             int secondEdgeSrc = firstEdgeDest + 1;
             while (secondEdgeSrc< noOfAttractions -1){
@@ -35,7 +36,7 @@ public abstract   class TSPSolverHeuristicsHelper {
                     List<Attraction> subListBetweenTheTwoEdges = orderOfTraversalAfterBasicTSPHeurisic.subList(firstEdgeDest, secondEdgeSrc + 1);
                     Collections.reverse(subListBetweenTheTwoEdges);
                     newOrderAfeterPartial2opt.addAll(subListBetweenTheTwoEdges);
-                    newOrderAfeterPartial2opt.addAll(orderOfTraversalAfterBasicTSPHeurisic.subList(secondEdgeSrc+1, noOfAttractions));
+                    newOrderAfeterPartial2opt.addAll(orderOfTraversalAfterBasicTSPHeurisic.subList(secondEdgeSrc+1, orderOfTraversalAfterBasicTSPHeurisic.size()));
                     orderOfTraversalAfterBasicTSPHeurisic = newOrderAfeterPartial2opt;
                     secondEdgeSrc = firstEdgeDest+1;
                 }
@@ -45,6 +46,7 @@ public abstract   class TSPSolverHeuristicsHelper {
             }
             firstEdgeDest++;
         }
+        orderOfTraversalAfterBasicTSPHeurisic.remove(firstAttractionToBeDuplicated);
         return orderOfTraversalAfterBasicTSPHeurisic;
     }
 
@@ -115,31 +117,13 @@ public abstract   class TSPSolverHeuristicsHelper {
         return totalTimeSpent;
     }
 
-    public static Set<Attraction> getExtremeAttraction(ArrayList<Attraction> listOfAttractions) {
+    public static Attraction getExtremeAttraction(ArrayList<Attraction> listOfAttractions) {
         Attraction westernmostAttraction = null;
-        Attraction easternmostAttraction = null;
-        Attraction northernmostAttraction = null;
-        Attraction southernmostAttraction = null;
-
-        Set<Attraction> extremeAttractions = new HashSet<Attraction>();
-        for (Attraction attraction:listOfAttractions){
-            if(westernmostAttraction==null||westernmostAttraction.getLongitude()>attraction.getLongitude()){
-                westernmostAttraction=attraction;
-            }
-            else if(easternmostAttraction==null||easternmostAttraction.getLongitude()<attraction.getLongitude()){
-                easternmostAttraction=attraction;
-            }
-            if(southernmostAttraction==null||southernmostAttraction.getLatitude()>attraction.getLatitude()){
-                southernmostAttraction=attraction;
-            }
-            else if(northernmostAttraction==null||northernmostAttraction.getLatitude()<attraction.getLatitude()){
-                northernmostAttraction=attraction;
+        for (Attraction attraction:listOfAttractions) {
+            if (westernmostAttraction == null || westernmostAttraction.getLongitude() > attraction.getLongitude()) {
+                westernmostAttraction = attraction;
             }
         }
-        extremeAttractions.add(westernmostAttraction);
-//        extremeAttractions.add(easternmostAttraction);
-//        extremeAttractions.add(southernmostAttraction);
-//        extremeAttractions.add(northernmostAttraction);
-        return extremeAttractions;
+        return westernmostAttraction;
     }
 }

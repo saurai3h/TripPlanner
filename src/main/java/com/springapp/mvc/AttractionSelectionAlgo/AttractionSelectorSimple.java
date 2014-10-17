@@ -35,7 +35,8 @@ public class AttractionSelectorSimple extends AttractionSelector {
             double lengthOfTheDay = 0.0;
             Attraction prevAttraction = null;
             int atttractionsSeenToday=0;
-            while (lengthOfTheDay<(Constants.getMAX_AVG_TRAVEL_TIME_PER_DAY(mode)+2*Constants.getMIN_AVG_TRAVEL_TIME_PER_DAY(mode))/3){
+            boolean shouldContinue = true;
+            while (shouldContinue){
                 Attraction nextBestAttraction = listOfAllAttractions.get(attractionsCoveredSoFar + atttractionsSeenToday);
                 scheduleForThisDay.add(nextBestAttraction);
                 lengthOfTheDay += nextBestAttraction.getVisitTime();
@@ -44,9 +45,26 @@ public class AttractionSelectorSimple extends AttractionSelector {
                 }
                 atttractionsSeenToday++;
                 prevAttraction = nextBestAttraction;
+                if(mode==1) {
+                    shouldContinue = lengthOfTheDay < Constants.getMIN_AVG_TRAVEL_TIME_PER_DAY(mode);
+                }
+                else if(mode == 2){
+                    shouldContinue = lengthOfTheDay<Constants.getMAX_AVG_TRAVEL_TIME_PER_DAY(mode);
+                }
+                else {
+                    System.out.println("check the value of mode. exiting..");
+                    break;
+                }
 
             }
+            if(lengthOfTheDay>Constants.getMAX_DAY_LENGTH_ABSOLUTE(mode)){
+                atttractionsSeenToday--;
+                scheduleForThisDay.remove(atttractionsSeenToday);
+            }
             attractionsCoveredSoFar=atttractionsSeenToday;
+            Attraction westernmostAttraction = TSPSolverHeuristicsHelper.getExtremeAttraction(scheduleForThisDay);
+//            scheduleForThisDay = TSPSolverHeuristicsHelper.TSPSolverForAttractions(scheduleForThisDay,westernmostAttraction,distanceCalculator);
+            scheduleForThisDay=TSPSolverHeuristicsHelper.apply2optHeuristicForTSP(distanceCalculator,scheduleForThisDay);
             listOfSchedulesForDays.add(scheduleForThisDay);
         }
         return listOfSchedulesForDays;

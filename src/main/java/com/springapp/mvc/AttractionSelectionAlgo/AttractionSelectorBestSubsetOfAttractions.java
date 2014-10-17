@@ -86,22 +86,15 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
         final DistanceCalculator<Attraction> distanceCalculator =  SqlQueryExecutor.getDistanceMatrix(cityName);
         log("distance matrix calculation" );
 
-        Set<Attraction> extremeAttractions = TSPSolverHeuristicsHelper.getExtremeAttraction(listOfAttractions);
+        Attraction extremeAttraction = TSPSolverHeuristicsHelper.getExtremeAttraction(listOfAttractions);
         Double minTimeInTransit = -1.0;
         log("preparing tsp solving");
-        for(Attraction extremeAttraction:extremeAttractions) {
-            ArrayList<Attraction> orderOfTraversalAfterBasicTSPHeurisic = TSPSolverHeuristicsHelper.TSPSolverForAttractions(
-                    listOfAttractions, extremeAttraction, distanceCalculator);
-            log("basic tsp");
-            ArrayList<Attraction> orderAfter2opt = TSPSolverHeuristicsHelper.apply2optHeuristicForTSP(distanceCalculator, orderOfTraversalAfterBasicTSPHeurisic);
-            log("2-opt");
-            ArrayList<List<Attraction>> scheduleForThisExtreme = segmentTourOfAttractionsIntoDays(noOfDays, distanceCalculator, orderAfter2opt, mode);
-            Double timeInTransitForThisSchedule = TSPSolverHeuristicsHelper.getTotalTimeSpentInTransitForASchedule(scheduleForThisExtreme, distanceCalculator);
-            if (minTimeInTransit == -1.0 || minTimeInTransit > timeInTransitForThisSchedule) {
-                minTimeInTransit = timeInTransitForThisSchedule;
-                schedule = scheduleForThisExtreme;
-            }
-        }
+        ArrayList<Attraction> orderOfTraversalAfterBasicTSPHeurisic = TSPSolverHeuristicsHelper.TSPSolverForAttractions(
+                listOfAttractions, extremeAttraction, distanceCalculator);
+        log("basic tsp");
+        ArrayList<Attraction> orderAfter2opt = TSPSolverHeuristicsHelper.apply2optHeuristicForTSP(distanceCalculator, orderOfTraversalAfterBasicTSPHeurisic);
+        log("2-opt");
+        schedule = segmentTourOfAttractionsIntoDays(noOfDays, distanceCalculator, orderAfter2opt, mode);
         schedule = minimizeLoadOnFirstAndLastDay(schedule,distanceCalculator);
         return schedule;
     }
@@ -139,7 +132,7 @@ public class AttractionSelectorBestSubsetOfAttractions extends AttractionSelecto
                         &&timeSpentAfterBestSegmentSoFar<Constants.getMAX_DAY_LENGTH_ABSOLUTE(mode)){
 
                     Double distBetweenCurAndNextAttraction = distanceCalculator.getDistance(curAttraction,nextAttraction);
-                    double extraTimeSpentToday = timeSpentSoFarToday - totalTimeNeededToCompleteTripNonStop/noOfDays;
+                    double extraTimeSpentToday = timeSpentSoFarToday - avgTimeNeededToSpendEveryRemainingDay;
                     Double rewardForSegmentingAfterCurAttraction = distBetweenCurAndNextAttraction *
                             Math.pow(extraTimeSpentToday, 2);
                     if (rewardForSegmentingAfterCurAttraction >bestRewardForSegmentingSeenSoFar){
